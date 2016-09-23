@@ -11,11 +11,18 @@
  * Text Domain: woocommerce-advanced-dashboard
  */
 
-define( 'ADVANCED_DASHBOARD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define('ADVANCED_DASHBOARD_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
-if ( is_admin() ) {
-	require_once( ADVANCED_DASHBOARD_PLUGIN_DIR . 'class.woocommerce-advanced-dashboard-admin.php' );
-	add_action( 'init', array( 'Advanced_Dashboard_Admin', 'init' ) );
+//register_activation_hook(__FILE__, array('Woocommerce Advanced Dashboard', 'plugin_activation'));
+//register_deactivation_hook(__FILE__, array('Woocommerce Advanced Dashboard', 'plugin_deactivation'));
+
+add_action('plugins_loaded', 'pp_advanced_dashboard_main_init');
+
+function pp_advanced_dashboard_main_init() {
+    if (is_admin()) {
+        require_once( ADVANCED_DASHBOARD_PLUGIN_DIR . 'classes.php' );
+        add_action('init', array('Advanced_Dashboard_Admin', 'init'));
+    }
 }
 
-add_action('wp_dashboard_setup', 'pp_advanced_dashboard');
+//add_action('wp_dashboard_setup', 'pp_advanced_dashboard');
