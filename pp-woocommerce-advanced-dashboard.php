@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Plugin Name: Woocommerce Advanced Dashboard
+ * Plugin Name: WooCommerce Advanced Dashboard
  * Plugin URI: http://ordin.pl/
  * Description: Plugin that gives you e.g. raports about sales in Wordpress dashboard.
  * Author: Piotr Pesta
@@ -21,7 +21,7 @@ add_action('plugins_loaded', 'pp_advanced_dashboard_main_init');
 function pp_advanced_dashboard_main_init() {
     if (is_admin()) {
         require_once( ADVANCED_DASHBOARD_PLUGIN_DIR . 'classes.php' );
-        add_action('init', array('Advanced_Dashboard_Admin', 'init'));
+        add_action('init', array('Advanced_Dashboard_Admin_Init', 'init'));
     }
 }
 
