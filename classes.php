@@ -55,7 +55,7 @@ class Advanced_Dashboard_View { # Dashboard view
         ?>
         <ul>
             <li>
-                <div><?php //echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart1_view();    ?></div>
+                <div><?php echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart1_view(); ?></div>
                 <div><?php printf(__("<strong>%s</strong> net sales this month", 'woocommerce'), wc_price($advanced_dashboard_call_month[1]->net_sales)); ?></div>
             </li>
             <li>
@@ -64,12 +64,12 @@ class Advanced_Dashboard_View { # Dashboard view
                 <?php echo "<br/>"; ?>
                 <?php
                 //print_r($advanced_dashboard_call_month[1]->order_counts);
-                foreach ($advanced_dashboard_call_month[1]->orders as $order_dates) {
-                    echo print_r($order_dates->post_date) . "<br/>";
-                }
-                foreach ($advanced_dashboard_call_month[1]->orders as $order_dates) {
-                    echo print_r($order_dates->total_sales) . "<br/>";
-                }
+//                foreach ($advanced_dashboard_call_month[1]->orders as $order_dates) {
+//                    echo $order_dates->post_date . "<br/>";
+//                }
+//                foreach ($advanced_dashboard_call_month[1]->orders as $order_dates) {
+//                    echo $order_dates->total_sales . "<br/>";
+//                }
                 ?>
             </li>
         </ul>
@@ -101,50 +101,46 @@ class Advanced_Dashboard_Call_And_Chart {
 
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
         <script type="text/javascript">
-            google.charts.load('current', {'packages': ['line']});
+            google.charts.load('current', {'packages': ['corechart', 'line']});
             google.charts.setOnLoadCallback(drawChart);
 
             function drawChart() {
-
                 var data = new google.visualization.DataTable();
-                data.addColumn('number', 'Day');
-                data.addColumn('number', 'Guardians of the Galaxy');
-                data.addColumn('number', 'The Avengers');
-                data.addColumn('number', 'Transformers: Age of Extinction');
+                data.addColumn('date', 'Date');
+                data.addColumn('number', 'Sales');
 
                 data.addRows([
-                    [1, 37.8, 80.8, 41.8],
-                    [2, 30.9, 69.5, 32.4],
-                    [3, 25.4, 57, 25.7],
-                    [4, 11.7, 18.8, 10.5],
-                    [5, 11.9, 17.6, 10.4],
-                    [6, 8.8, 13.6, 7.7],
-                    [7, 7.6, 12.3, 9.6],
-                    [8, 12.3, 29.2, 10.6],
-                    [9, 16.9, 42.9, 14.8],
-                    [10, 12.8, 30.9, 11.6],
-                    [11, 5.3, 7.9, 4.7],
-                    [12, 6.6, 8.4, 5.2],
-                    [13, 4.8, 6.3, 3.6],
-                    [14, 4.2, 6.2, 3.4]
-                ]);
+        <?php
+        $advanced_dashboard_call_month = self::advanced_dashboard_call('month'); # Month interval
+        foreach ($advanced_dashboard_call_month[1]->orders as $order_dates) {
+            $value = $order_dates->post_date;
+            $valueFormat = DateTime::createFromFormat('Y-m-d H:i:s', $value);
+            $year = $valueFormat->format('Y');
+            $month = $valueFormat->format('m') - 1;
+            $day = $valueFormat->format('d');
+            $valueSet = $year . ", " . $month . ", " . $day;
+            echo "[new Date(" . $valueSet . "), " . $order_dates->total_sales . "],";
+        }
+        ?>
 
+                ]);
                 var options = {
-                    chart: {
-                        title: 'Box Office Earnings in First Two Weeks of Opening',
-                        subtitle: 'in millions of dollars (USD)'
+                    hAxis: {
+                        title: 'Time'
                     },
-                    width: 900,
-                    height: 500
+                    vAxis: {
+                        title: 'Value'
+                    },
+                    title: 'This Month Sales',
+                    legend: {position: 'none'}
                 };
 
-                var chart1 = new google.charts.Line(document.getElementById('chart1'));
-                var chart2 = new google.charts.Line(document.getElementById('chart2'));
+                var chart1 = new google.visualization.LineChart(document.getElementById('chart1'));
 
                 chart1.draw(data, options);
-                chart2.draw(data, options);
             }
         </script>
+
 
         <?php
     }
