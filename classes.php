@@ -62,15 +62,6 @@ class Advanced_Dashboard_View { # Dashboard view
                 <?php //echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart2_view(); ?>
                 <?php printf(__("<strong>%s</strong> net sales this day", 'woocommerce'), wc_price($advanced_dashboard_call_day[1]->net_sales)); ?>
                 <?php echo "<br/>"; ?>
-                <?php
-                //print_r($advanced_dashboard_call_month[1]->order_counts);
-//                foreach ($advanced_dashboard_call_month[1]->orders as $order_dates) {
-//                    echo $order_dates->post_date . "<br/>";
-//                }
-//                foreach ($advanced_dashboard_call_month[1]->orders as $order_dates) {
-//                    echo $order_dates->total_sales . "<br/>";
-//                }
-                ?>
             </li>
         </ul>
         <?php
@@ -110,19 +101,7 @@ class Advanced_Dashboard_Call_And_Chart {
                 data.addColumn('number', 'Sales');
 
                 data.addRows([
-        <?php
-        $advanced_dashboard_call_month = self::advanced_dashboard_call('month'); # Month interval
-        foreach ($advanced_dashboard_call_month[1]->orders as $order_dates) {
-            $value = $order_dates->post_date;
-            $valueFormat = DateTime::createFromFormat('Y-m-d H:i:s', $value);
-            $year = $valueFormat->format('Y');
-            $month = $valueFormat->format('m') - 1;
-            $day = $valueFormat->format('d');
-            $valueSet = $year . ", " . $month . ", " . $day;
-            echo "[new Date(" . $valueSet . "), " . $order_dates->total_sales . "],";
-        }
-        ?>
-
+        <?php self::advanced_dashboard_chart_loop(); ?>
                 ]);
                 var options = {
                     hAxis: {
@@ -143,6 +122,67 @@ class Advanced_Dashboard_Call_And_Chart {
 
 
         <?php
+    }
+
+    public static function advanced_dashboard_chart_loop() { # Loop for chart
+        $advanced_dashboard_call_month = self::advanced_dashboard_call('month'); # Month interval
+        $date = $advanced_dashboard_call_month[1]->orders[0]->post_date;
+        $formatDate = DateTime::createFromFormat('Y-m-d H:i:s', $date);
+        $yearForNumber = $formatDate->format('Y');
+        $monthForNumber = $formatDate->format('m');
+        $numberOfDays = cal_days_in_month(CAL_GREGORIAN, $monthForNumber, $yearForNumber);
+        $JStableValue = array();
+        $JStableNoValue = array();
+        for ($i = 0; $i <= count($advanced_dashboard_call_month[1]->orders); ++$i) {
+            $value = $advanced_dashboard_call_month[1]->orders[$i]->post_date;
+            if (isset($value)) {
+                $valueFormat = DateTime::createFromFormat('Y-m-d H:i:s', $value);
+                $year = $valueFormat->format('Y');
+                $month = $valueFormat->format('m');
+                $day = $valueFormat->format('j');
+                $valueSet = $year . "/" . $month . "/" . $day;
+                $JStableValue[$i]['date'] = $valueSet;
+                $JStableValue[$i]['value'] = $advanced_dashboard_call_month[1]->orders[$i]->total_sales;
+            }
+        }
+
+        function in_array_r($needle, $haystack, $strict = false) { # Remove duplicate dates from "no value" array
+            foreach ($haystack as $item) {
+                if (($strict ? $item === $needle : $item == $needle) || (is_array($item) && in_array_r($needle, $item, $strict))) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        for ($i = 1; $i <= $numberOfDays; ++$i) {
+            $year = $formatDate->format('Y');
+            $month = $formatDate->format('m');
+            $day = $i;
+            $valueSet = $year . "/" . $month . "/" . $day;
+            if (!in_array_r($valueSet, $JStableValue)) {
+                $JStableNoValue[$i]['date'] = $valueSet;
+                $JStableNoValue[$i]['value'] = 0;
+            }
+        }
+
+        $JStable = array_merge($JStableValue, $JStableNoValue);
+
+        function date_compare($a, $b) {
+            return strtotime($a['date']) - strtotime($b['date']);
+        }
+
+        usort($JStable, 'date_compare');
+
+        foreach ($JStable as $JSdata) {
+            $valueFormat = DateTime::createFromFormat('Y/m/j', $JSdata['date']);
+            $year = $valueFormat->format('Y');
+            $month = $valueFormat->format('m') - 1;
+            $day = $valueFormat->format('j');
+            $valueSet = $year . ", " . $month . ", " . $day;
+            echo "[new Date(" . $valueSet . "), " . $JSdata['value'] . "],";
+        }
     }
 
     public static function advanced_dashboard_chart1_view() { # Div of chart1 hook
