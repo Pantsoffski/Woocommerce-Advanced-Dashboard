@@ -62,6 +62,9 @@ class Advanced_Dashboard_View { # Dashboard view
                 <?php //echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart2_view(); ?>
                 <?php printf(__("<strong>%s</strong> net sales this day", 'woocommerce'), wc_price($advanced_dashboard_call_day[1]->net_sales)); ?>
                 <?php echo "<br/>"; ?>
+                <?php
+                $testowy = Advanced_Dashboard_Call_And_Chart::testing_call('month');
+                ?>
             </li>
         </ul>
         <?php
@@ -70,6 +73,22 @@ class Advanced_Dashboard_View { # Dashboard view
 }
 
 class Advanced_Dashboard_Call_And_Chart {
+
+    public static function testing_call($interval) {
+        $reports = new WC_Admin_Report();
+        $sales_by_date = new WC_Report_Sales_By_Date();
+        if ($interval == 'month') {
+            $sales_by_date->start_date = strtotime(date('Y-m-01', current_time('timestamp')));
+        } elseif ($interval == 'day') {
+            $sales_by_date->start_date = current_time('timestamp');
+        }
+        $sales_by_date->end_date = current_time('timestamp');
+        $sales_by_date->chart_groupby = 'day';
+        $sales_by_date->group_by_query = 'YEAR(posts.post_date), MONTH(posts.post_date), DAY(posts.post_date)';
+        $report_data = $sales_by_date->get_report_data();
+
+        return array($reports, $report_data);
+    }
 
     public static function advanced_dashboard_call($interval) {
         $reports = new WC_Admin_Report();
@@ -99,20 +118,29 @@ class Advanced_Dashboard_Call_And_Chart {
                 var data = new google.visualization.DataTable();
                 data.addColumn('date', 'Date');
                 data.addColumn('number', 'Sales');
+                data.addColumn('number', 'Orders');
 
                 data.addRows([
         <?php self::advanced_dashboard_chart_loop(); ?>
                 ]);
                 var options = {
+                    series: {
+                        0: {targetAxisIndex: 0},
+                        1: {targetAxisIndex: 1}
+                    },
                     hAxis: {
                         title: 'Time'
                     },
                     vAxis: {
-                        title: 'Value'
+                        0: {title: 'Value'},
+                        1: {title: 'Orders'}
                     },
-                    title: 'This Month Sales',
-                    legend: {position: 'none'}
+                    title: 'This Month Sales and Orders',
                 };
+
+                var formatter = new google.visualization.NumberFormat(
+                        {pattern: '###,###', suffix: " zł"});
+                formatter.format(data, 1);
 
                 var chart1 = new google.visualization.LineChart(document.getElementById('chart1'));
 
@@ -134,7 +162,8 @@ class Advanced_Dashboard_Call_And_Chart {
         $JStableValue = array();
         $JStableNoValue = array();
         for ($i = 0; $i <= count($advanced_dashboard_call_month[1]->orders); ++$i) {
-            $value = $advanced_dashboard_call_month[1]->orders[$i]->post_date;
+            $value = $advanced_dashboard_call_month[1]->orders[$i]->post_date; #Date of orders
+            $orderCount = $advanced_dashboard_call_month[1]->order_counts[$i]->count; #Number of orders in each day
             if (isset($value)) {
                 $valueFormat = DateTime::createFromFormat('Y-m-d H:i:s', $value);
                 $year = $valueFormat->format('Y');
@@ -143,6 +172,7 @@ class Advanced_Dashboard_Call_And_Chart {
                 $valueSet = $year . "/" . $month . "/" . $day;
                 $JStableValue[$i]['date'] = $valueSet;
                 $JStableValue[$i]['value'] = $advanced_dashboard_call_month[1]->orders[$i]->total_sales;
+                $JStableValue[$i]['orders'] = $orderCount;
             }
         }
 
@@ -164,6 +194,7 @@ class Advanced_Dashboard_Call_And_Chart {
             if (!in_array_r($valueSet, $JStableValue)) {
                 $JStableNoValue[$i]['date'] = $valueSet;
                 $JStableNoValue[$i]['value'] = 0;
+                $JStableNoValue[$i]['orders'] = 0;
             }
         }
 
@@ -181,7 +212,7 @@ class Advanced_Dashboard_Call_And_Chart {
             $month = $valueFormat->format('m') - 1;
             $day = $valueFormat->format('j');
             $valueSet = $year . ", " . $month . ", " . $day;
-            echo "[new Date(" . $valueSet . "), " . $JSdata['value'] . "],";
+            echo "[new Date(" . $valueSet . "), " . $JSdata['value'] . ", " . $JSdata['orders'] . "],";
         }
     }
 
