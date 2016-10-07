@@ -64,6 +64,7 @@ class Advanced_Dashboard_View { # Dashboard view
                 <?php echo "<br/>"; ?>
                 <?php
                 $testowy = Advanced_Dashboard_Call_And_Chart::testing_call('month');
+                print_r($testowy[1]->order_counts[0]->count);
                 ?>
             </li>
         </ul>
@@ -136,6 +137,7 @@ class Advanced_Dashboard_Call_And_Chart {
                         1: {title: 'Orders'}
                     },
                     title: 'This Month Sales and Orders',
+                    legend: {position: 'bottom'}
                 };
 
                 var formatter = new google.visualization.NumberFormat(
