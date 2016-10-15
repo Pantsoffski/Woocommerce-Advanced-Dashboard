@@ -122,7 +122,12 @@ class Advanced_Dashboard_Call_And_Chart {
                 data.addColumn('number', 'Orders');
 
                 data.addRows([
-        <?php self::advanced_dashboard_chart_loop(); ?>
+        <?php
+        $advanced_dashboard_call_month = self::advanced_dashboard_call('month');
+        if ($advanced_dashboard_call_month[1]->orders[0]->post_date) { # If there is any orders start data loop
+            self::advanced_dashboard_chart_loop();
+        }
+        ?>
                 ]);
                 var options = {
                     series: {
@@ -152,6 +157,7 @@ class Advanced_Dashboard_Call_And_Chart {
 
 
         <?php
+        self::advanced_dashboard_sql_op(); #To remove, test only
     }
 
     public static function advanced_dashboard_chart_loop() { # Loop for chart
@@ -216,6 +222,12 @@ class Advanced_Dashboard_Call_And_Chart {
             $valueSet = $year . ", " . $month . ", " . $day;
             echo "[new Date(" . $valueSet . "), " . $JSdata['value'] . ", " . $JSdata['orders'] . "],";
         }
+    }
+
+    public static function advanced_dashboard_sql_op() { # SQL meta miner
+        global $wpdb;
+        $query_from = $wpdb->get_results("SELECT SUM(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = '_stock'"); # Sum all products quantity
+        print_r($query_from); # To remove
     }
 
     public static function advanced_dashboard_chart1_view() { # Div of chart1 hook
