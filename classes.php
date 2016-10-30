@@ -25,7 +25,8 @@ class Advanced_Dashboard_Admin_Init { # Initialization
         add_action('admin_menu', array('Advanced_Dashboard_Admin_Init', 'admin_menu'), 5); # Priority 5
         add_action('wp_dashboard_setup', array('Advanced_Dashboard_Admin_Init', 'wp_dashboard_setup'));
         add_action('admin_head-index.php', array('Advanced_Dashboard_Admin_Init', 'two_columns'));
-        add_action('admin_head', array('Advanced_Dashboard_Call_And_Chart', 'advanced_dashboard_chart_head')); # Script to admin head
+        add_action('admin_head', array('Advanced_Dashboard_Chart_Scripts', 'advanced_dashboard_chart_head1')); # Script1 to admin head
+        add_action('admin_head', array('Advanced_Dashboard_Chart_Scripts', 'advanced_dashboard_chart_head2')); # Script2 to admin head
     }
 
     public static function admin_init() {
@@ -48,8 +49,7 @@ class Advanced_Dashboard_Admin_Init { # Initialization
 
 class Advanced_Dashboard_View { # Dashboard view
 
-    public static function advanced_dashboard_draw() {
-
+    public static function advanced_dashboard_draw() { # Graph call
         $advanced_dashboard_call_month = Advanced_Dashboard_Call_And_Chart::advanced_dashboard_call('month'); # Month interval
         $advanced_dashboard_call_day = Advanced_Dashboard_Call_And_Chart::advanced_dashboard_call('day'); # 1 Day interval
         ?>
@@ -57,15 +57,12 @@ class Advanced_Dashboard_View { # Dashboard view
             <li>
                 <div><?php echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart1_view(); ?></div>
                 <div><?php printf(__("<strong>%s</strong> net sales this month", 'woocommerce'), wc_price($advanced_dashboard_call_month[1]->net_sales)); ?></div>
+                <?php printf(__("<strong>%s</strong> net sales this day", 'woocommerce'), wc_price($advanced_dashboard_call_day[1]->net_sales)); ?>
             </li>
             <li>
-                <?php //echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart2_view(); ?>
-                <?php printf(__("<strong>%s</strong> net sales this day", 'woocommerce'), wc_price($advanced_dashboard_call_day[1]->net_sales)); ?>
-                <?php echo "<br/>"; ?>
-                <?php
-                $testowy = Advanced_Dashboard_Call_And_Chart::testing_call('month');
-                print_r($testowy[1]->order_counts[0]->count);
-                ?>
+                <?php echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart2_view(); ?>
+
+                <div><?php //echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_sql_op(); #To remove, SQL test only           ?></div>
             </li>
         </ul>
         <?php
@@ -75,7 +72,7 @@ class Advanced_Dashboard_View { # Dashboard view
 
 class Advanced_Dashboard_Call_And_Chart {
 
-    public static function testing_call($interval) {
+    public static function advanced_dashboard_call($interval) { # Returns SQL data, sales value, data, number of orders
         $reports = new WC_Admin_Report();
         $sales_by_date = new WC_Report_Sales_By_Date();
         if ($interval == 'month') {
@@ -91,84 +88,15 @@ class Advanced_Dashboard_Call_And_Chart {
         return array($reports, $report_data);
     }
 
-    public static function advanced_dashboard_call($interval) {
-        $reports = new WC_Admin_Report();
-        $sales_by_date = new WC_Report_Sales_By_Date();
-        if ($interval == 'month') {
-            $sales_by_date->start_date = strtotime(date('Y-m-01', current_time('timestamp')));
-        } elseif ($interval == 'day') {
-            $sales_by_date->start_date = current_time('timestamp');
-        }
-        $sales_by_date->end_date = current_time('timestamp');
-        $sales_by_date->chart_groupby = 'day';
-        $sales_by_date->group_by_query = 'YEAR(posts.post_date), MONTH(posts.post_date), DAY(posts.post_date)';
-        $report_data = $sales_by_date->get_report_data();
-
-        return array($reports, $report_data);
-    }
-
-    public static function advanced_dashboard_chart_head() { # Chart script
-        ?>
-
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-        <script type="text/javascript">
-            google.charts.load('current', {'packages': ['corechart', 'line']});
-            google.charts.setOnLoadCallback(drawChart);
-
-            function drawChart() {
-                var data = new google.visualization.DataTable();
-                data.addColumn('date', 'Date');
-                data.addColumn('number', 'Sales');
-                data.addColumn('number', 'Orders');
-
-                data.addRows([
-        <?php
-        $advanced_dashboard_call_month = self::advanced_dashboard_call('month');
-        if ($advanced_dashboard_call_month[1]->orders[0]->post_date) { # If there is any orders start data loop
-            self::advanced_dashboard_chart_loop();
-        }
-        ?>
-                ]);
-                var options = {
-                    series: {
-                        0: {targetAxisIndex: 0},
-                        1: {targetAxisIndex: 1}
-                    },
-                    hAxis: {
-                        title: 'Time'
-                    },
-                    vAxis: {
-                        0: {title: 'Value'},
-                        1: {title: 'Orders'}
-                    },
-                    title: 'This Month Sales and Orders',
-                    legend: {position: 'bottom'}
-                };
-
-                var formatter = new google.visualization.NumberFormat(
-                        {pattern: '###,###', suffix: " zł"});
-                formatter.format(data, 1);
-
-                var chart1 = new google.visualization.LineChart(document.getElementById('chart1'));
-
-                chart1.draw(data, options);
-            }
-        </script>
-
-
-        <?php
-        self::advanced_dashboard_sql_op(); #To remove, test only
-    }
-
-    public static function advanced_dashboard_chart_loop() { # Loop for chart
+    public static function advanced_dashboard_chart_loop_value_orders() { # Loop for value and number of orders chart
         $advanced_dashboard_call_month = self::advanced_dashboard_call('month'); # Month interval
         $date = $advanced_dashboard_call_month[1]->orders[0]->post_date;
         $formatDate = DateTime::createFromFormat('Y-m-d H:i:s', $date);
         $yearForNumber = $formatDate->format('Y');
         $monthForNumber = $formatDate->format('m');
         $numberOfDays = cal_days_in_month(CAL_GREGORIAN, $monthForNumber, $yearForNumber);
-        $JStableValue = array();
-        $JStableNoValue = array();
+        $JStableValue = array(); # For days with orders
+        $JStableNoValue = array(); # For empty days, without orders
         for ($i = 0; $i <= count($advanced_dashboard_call_month[1]->orders); ++$i) {
             $value = $advanced_dashboard_call_month[1]->orders[$i]->post_date; #Date of orders
             $orderCount = $advanced_dashboard_call_month[1]->order_counts[$i]->count; #Number of orders in each day
@@ -224,10 +152,36 @@ class Advanced_Dashboard_Call_And_Chart {
         }
     }
 
-    public static function advanced_dashboard_sql_op() { # SQL meta miner
+    public static function advanced_dashboard_chart_loop_qty() {
+        $qtyData = self::advanced_dashboard_sql_qty(); # SQL qty data miner
+        foreach ($qtyData as $JSdataQty) {
+            $formatDate = DateTime::createFromFormat('Y-m-d', $JSdataQty->date);
+            $year = $formatDate->format('Y');
+            $month = $formatDate->format('m') - 1;
+            $day = $formatDate->format('j');
+            $valueSet = $year . ", " . $month . ", " . $day;
+            echo "[new Date(" . $valueSet . "), " . $JSdataQty->qty . "],";
+        }
+    }
+
+    public static function advanced_dashboard_sql_qty() { # SQL data miner
         global $wpdb;
-        $query_from = $wpdb->get_results("SELECT SUM(meta_value) FROM {$wpdb->postmeta} WHERE meta_key = '_stock'"); # Sum all products quantity
-        print_r($query_from); # To remove
+
+        $query = array();
+        $query['fields'] = "SELECT SUM({$wpdb->prefix}woocommerce_order_itemmeta.meta_value) AS qty, DATE({$wpdb->prefix}posts.post_date) AS date
+			FROM  {$wpdb->prefix}woocommerce_order_itemmeta";
+        $query['join'] = "INNER JOIN {$wpdb->prefix}woocommerce_order_items ON {$wpdb->prefix}woocommerce_order_itemmeta.order_item_id = {$wpdb->prefix}woocommerce_order_items.order_item_id ";
+        $query['join'] .= "INNER JOIN {$wpdb->prefix}posts ON {$wpdb->prefix}woocommerce_order_items.order_id = {$wpdb->prefix}posts.ID ";
+        $query['where'] = "WHERE {$wpdb->prefix}posts.post_status IN ( 'wc-" . implode("','wc-", array('completed', 'processing', 'on-hold')) . "' ) ";
+        $query['where'] = "AND {$wpdb->prefix}woocommerce_order_itemmeta.meta_key = '_qty' ";
+        $query['where'] .= "AND {$wpdb->prefix}posts.post_date >= '" . date('Y-m-01', current_time('timestamp')) . "' ";
+        $query['where'] .= "AND {$wpdb->prefix}posts.post_date <= '" . date('Y-m-d H:i:s', current_time('timestamp')) . "' ";
+        $query['groupby'] = "GROUP BY date ";
+        $query['orderby'] = "ORDER BY date ASC";
+
+        $qtyData = $wpdb->get_results(implode(' ', $query));
+
+        return $qtyData;
     }
 
     public static function advanced_dashboard_chart1_view() { # Div of chart1 hook
@@ -242,6 +196,105 @@ class Advanced_Dashboard_Call_And_Chart {
         ?>
 
         <div id="chart2"></div>
+
+        <?php
+    }
+
+}
+
+class Advanced_Dashboard_Chart_Scripts { # Google Charts JS
+
+    public static function advanced_dashboard_chart_head1() { # Sales & orders chart script
+        ?>
+
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript">
+            google.charts.load('current', {'packages': ['corechart', 'line']});
+            google.charts.setOnLoadCallback(drawChart);
+
+            function drawChart() {
+                var data = new google.visualization.DataTable();
+                data.addColumn('date', 'Date');
+                data.addColumn('number', 'Sales');
+                data.addColumn('number', 'Orders');
+
+                data.addRows([
+        <?php
+        $advanced_dashboard_call_month = Advanced_Dashboard_Call_And_Chart::advanced_dashboard_call('month');
+        if ($advanced_dashboard_call_month[1]->orders[0]->post_date) { # If there is any orders start data loop
+            Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart_loop_value_orders();
+        }
+        ?>
+                ]);
+                var options = {
+                    series: {
+                        0: {targetAxisIndex: 0, lineWidth: 5, color: '#FFD700'},
+                        1: {targetAxisIndex: 1}
+                    },
+                    hAxis: {
+                        title: 'Time'
+                    },
+                    vAxis: {
+                        0: {title: 'Value'},
+                        1: {title: 'Orders'}
+                    },
+                    title: 'This Month Sales and Orders',
+                    legend: {position: 'bottom'}
+                };
+
+                var formatter = new google.visualization.NumberFormat(
+                        {pattern: '###,###', suffix: " zł"});
+                formatter.format(data, 1);
+
+                var chart1 = new google.visualization.LineChart(document.getElementById('chart1'));
+
+                chart1.draw(data, options);
+            }
+        </script>
+
+        <?php
+    }
+
+    public static function advanced_dashboard_chart_head2() { # Qty chart script
+        ?>
+
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript">
+            google.charts.load('current', {'packages': ['corechart', 'line']});
+            google.charts.setOnLoadCallback(drawChart);
+
+            function drawChart() {
+                var data2 = new google.visualization.DataTable();
+                data2.addColumn('date', 'Date');
+                data2.addColumn('number', 'Qty');
+
+                data2.addRows([
+        <?php
+        $advanced_dashboard_call_month = Advanced_Dashboard_Call_And_Chart::advanced_dashboard_call('month');
+        if ($advanced_dashboard_call_month[1]->orders[0]->post_date) { # If there is any orders start data loop
+            Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart_loop_qty();
+        }
+        ?>
+                ]);
+                var options2 = {
+                    series: {
+                        0: {targetAxisIndex: 0, lineWidth: 5, color: 'blue'},
+                    },
+                    hAxis: {
+                        title: 'Time'
+                    },
+                    vAxis: {
+                        0: {title: 'Quantity'},
+                    },
+                    title: 'This Month Quantity Sold',
+                    legend: {position: 'bottom'}
+                };
+
+                var chart2 = new google.visualization.LineChart(document.getElementById('chart2'));
+
+                chart2.draw(data2, options2);
+            }
+        </script>
 
         <?php
     }
