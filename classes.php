@@ -60,10 +60,32 @@ class Advanced_Dashboard_View { # Dashboard view
                 <?php printf(__("<strong>%s</strong> net sales this day", 'woocommerce'), wc_price($advanced_dashboard_call_day[1]->net_sales)); ?>
             </li>
             <li>
-                <?php echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart2_view(); ?>
-
-                <div><?php //echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_sql_op(); #To remove, SQL test only           ?></div>
+                <div><?php echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart2_view(); ?></div>
             </li>
+            <?php
+            if (!current_user_can('edit_shop_orders')) {
+                return;
+            }
+            $on_hold_count = 0;
+            $processing_count = 0;
+
+            foreach (wc_get_order_types('order-count') as $type) {
+                $counts = (array) wp_count_posts($type);
+                $on_hold_count += isset($counts['wc-on-hold']) ? $counts['wc-on-hold'] : 0;
+                $processing_count += isset($counts['wc-processing']) ? $counts['wc-processing'] : 0;
+            }
+            ?>
+            <li class="processing-orders">
+                <a href="<?php echo admin_url('edit.php?post_status=wc-processing&post_type=shop_order'); ?>">
+                    <?php printf(_n("<strong>%s order</strong> awaiting processing", "<strong>%s orders</strong> awaiting processing", $processing_count, 'woocommerce'), $processing_count); ?>
+                </a>
+            </li>
+            <li class="on-hold-orders">
+                <a href="<?php echo admin_url('edit.php?post_status=wc-on-hold&post_type=shop_order'); ?>">
+                    <?php printf(_n("<strong>%s order</strong> on-hold", "<strong>%s orders</strong> on-hold", $on_hold_count, 'woocommerce'), $on_hold_count); ?>
+                </a>
+            </li>
+
         </ul>
         <?php
     }
@@ -96,9 +118,9 @@ class Advanced_Dashboard_Call_And_Chart {
         $monthForNumber = $formatDate->format('m');
         $numberOfDays = cal_days_in_month(CAL_GREGORIAN, $monthForNumber, $yearForNumber);
         $JStableValue = array(); # For days with orders
-        $JStableNoValue = array(); # For empty days, without orders
+
         for ($i = 0; $i <= count($advanced_dashboard_call_month[1]->orders); ++$i) {
-            $value = $advanced_dashboard_call_month[1]->orders[$i]->post_date; #Date of orders
+            $value = $advanced_dashboard_call_month[1]->orders[$i]->post_date; #Dates of orders
             $orderCount = $advanced_dashboard_call_month[1]->order_counts[$i]->count; #Number of orders in each day
             if (isset($value)) {
                 $valueFormat = DateTime::createFromFormat('Y-m-d H:i:s', $value);
@@ -112,35 +134,7 @@ class Advanced_Dashboard_Call_And_Chart {
             }
         }
 
-        function in_array_r($needle, $haystack, $strict = false) { # Remove duplicate dates from "no value" array
-            foreach ($haystack as $item) {
-                if (($strict ? $item === $needle : $item == $needle) || (is_array($item) && in_array_r($needle, $item, $strict))) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        for ($i = 1; $i <= $numberOfDays; ++$i) {
-            $year = $formatDate->format('Y');
-            $month = $formatDate->format('m');
-            $day = $i;
-            $valueSet = $year . "/" . $month . "/" . $day;
-            if (!in_array_r($valueSet, $JStableValue)) {
-                $JStableNoValue[$i]['date'] = $valueSet;
-                $JStableNoValue[$i]['value'] = 0;
-                $JStableNoValue[$i]['orders'] = 0;
-            }
-        }
-
-        $JStable = array_merge($JStableValue, $JStableNoValue);
-
-        function date_compare($a, $b) {
-            return strtotime($a['date']) - strtotime($b['date']);
-        }
-
-        usort($JStable, 'date_compare');
+        $JStable = self::advanced_dashboard_zero_days($numberOfDays, $JStableValue, $formatDate, $type = 'value'); # Add days with no orders to chart
 
         foreach ($JStable as $JSdata) {
             $valueFormat = DateTime::createFromFormat('Y/m/j', $JSdata['date']);
@@ -154,13 +148,32 @@ class Advanced_Dashboard_Call_And_Chart {
 
     public static function advanced_dashboard_chart_loop_qty() {
         $qtyData = self::advanced_dashboard_sql_qty(); # SQL qty data miner
-        foreach ($qtyData as $JSdataQty) {
-            $formatDate = DateTime::createFromFormat('Y-m-d', $JSdataQty->date);
+        $formatDate = DateTime::createFromFormat('Y-m-d', $qtyData[0]->date);
+        $yearForNumber = $formatDate->format('Y');
+        $monthForNumber = $formatDate->format('m');
+        $numberOfDays = cal_days_in_month(CAL_GREGORIAN, $monthForNumber, $yearForNumber);
+        $JStableValue = array(); # For days with qty
+        $i = 0;
+        foreach ($qtyData as $JSdataQty) { # Poulate chart with non-zero qty
+            $formatDateLoop = DateTime::createFromFormat('Y-m-d', $JSdataQty->date);
+            $year = $formatDateLoop->format('Y');
+            $month = $formatDateLoop->format('m');
+            $day = $formatDateLoop->format('j');
+            $valueSet = $year . "/" . $month . "/" . $day;
+            $JStableValue[$i]['date'] = $valueSet;
+            $JStableValue[$i]['qty'] = $JSdataQty->qty;
+            ++$i;
+        }
+
+        $JStable = self::advanced_dashboard_zero_days($numberOfDays, $JStableValue, $formatDate, $type = 'qty'); # Add days with no orders to chart
+        //print_r($JStable);
+        foreach ($JStable as $JSdataQty) {
+            $formatDate = DateTime::createFromFormat('Y/m/d', $JSdataQty['date']);
             $year = $formatDate->format('Y');
             $month = $formatDate->format('m') - 1;
             $day = $formatDate->format('j');
             $valueSet = $year . ", " . $month . ", " . $day;
-            echo "[new Date(" . $valueSet . "), " . $JSdataQty->qty . "],";
+            echo "[new Date(" . $valueSet . "), " . $JSdataQty['qty'] . "],";
         }
     }
 
@@ -182,6 +195,54 @@ class Advanced_Dashboard_Call_And_Chart {
         $qtyData = $wpdb->get_results(implode(' ', $query));
 
         return $qtyData;
+    }
+
+    public static function advanced_dashboard_zero_days($numberOfDays, $JStableValue, $formatDate, $type) { # Show zero days on chart (days without orders)
+        if (!function_exists('in_array_r')) { # Avoid redeclaring function
+
+            function in_array_r($needle, $haystack, $strict = false) { # Remove duplicate dates from "no value" array
+                foreach ($haystack as $item) {
+                    if (($strict ? $item === $needle : $item == $needle) || (is_array($item) && in_array_r($needle, $item, $strict))) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+        }
+
+        $JStableNoValue = array(); # For empty days, without orders
+
+        for ($i = 1; $i <= $numberOfDays; ++$i) {
+            $year = $formatDate->format('Y');
+            $month = $formatDate->format('m');
+            $day = $i;
+            $valueSet = $year . "/" . $month . "/" . $day;
+            if (!in_array_r($valueSet, $JStableValue) && $type == 'value') {
+                $JStableNoValue[$i]['date'] = $valueSet;
+                $JStableNoValue[$i]['value'] = 0;
+                $JStableNoValue[$i]['orders'] = 0;
+            }
+            if (!in_array_r($valueSet, $JStableValue) && $type == 'qty') {
+                $JStableNoValue[$i]['date'] = $valueSet;
+                $JStableNoValue[$i]['qty'] = 0;
+            }
+        }
+
+        $JStable = array_merge($JStableValue, $JStableNoValue);
+
+        if (!function_exists('date_compare')) { # Avoid redeclaring function
+
+            function date_compare($a, $b) {
+                return strtotime($a['date']) - strtotime($b['date']);
+            }
+
+        }
+
+        usort($JStable, 'date_compare');
+
+        return $JStable;
     }
 
     public static function advanced_dashboard_chart1_view() { # Div of chart1 hook
@@ -277,15 +338,14 @@ class Advanced_Dashboard_Chart_Scripts { # Google Charts JS
         ?>
                 ]);
                 var options2 = {
-                    series: {
-                        0: {targetAxisIndex: 0, lineWidth: 5, color: 'blue'},
-                    },
                     hAxis: {
                         title: 'Time'
                     },
                     vAxis: {
-                        0: {title: 'Quantity'},
+                        title: 'Quantity'
                     },
+                    lineWidth: 5,
+                    color: 'blue',
                     title: 'This Month Quantity Sold',
                     legend: {position: 'bottom'}
                 };
