@@ -27,6 +27,7 @@ class Advanced_Dashboard_Admin_Init { # Initialization
         add_action('admin_head-index.php', array('Advanced_Dashboard_Admin_Init', 'two_columns'));
         add_action('admin_head', array('Advanced_Dashboard_Chart_Scripts', 'advanced_dashboard_chart_head1')); # Script1 to admin head
         add_action('admin_head', array('Advanced_Dashboard_Chart_Scripts', 'advanced_dashboard_chart_head2')); # Script2 to admin head
+        add_action('admin_enqueue_scripts', array('Advanced_Dashboard_Chart_Scripts', 'advanced_dashboard_chart_custom_script')); # Custom script to admin head
     }
 
     public static function admin_init() {
@@ -53,7 +54,13 @@ class Advanced_Dashboard_View { # Dashboard view
         $advanced_dashboard_call_month = Advanced_Dashboard_Call_And_Chart::advanced_dashboard_call('month'); # Month interval
         $advanced_dashboard_call_day = Advanced_Dashboard_Call_And_Chart::advanced_dashboard_call('day'); # 1 Day interval
         ?>
-        <ul>
+        <form id="form1">
+            <input type="hidden" id="gifDir" value="<?php echo plugins_url('cat_loading.gif', __FILE__) ?>" />
+            <input type="date" name="startdate" class="datepicker" id="startdate" />
+            <input type="date" name="enddate" class="datepicker" id="enddate" />
+            <input type="button" onclick="change_data_ad()" value="Apply" id="submitdates" />
+        </form>
+        <ul id="advanced-dashboard-ul">
             <li>
                 <div><?php echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart1_view(); ?></div>
                 <div><?php printf(__("<strong>%s</strong> net sales this month", 'woocommerce'), wc_price($advanced_dashboard_call_month[1]->net_sales)); ?></div>
@@ -270,47 +277,47 @@ class Advanced_Dashboard_Chart_Scripts { # Google Charts JS
 
         <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
         <script type="text/javascript">
-            google.charts.load('current', {'packages': ['corechart', 'line']});
-            google.charts.setOnLoadCallback(drawChart);
+                google.charts.load('current', {'packages': ['corechart', 'line']});
+                google.charts.setOnLoadCallback(drawChart);
 
-            function drawChart() {
-                var data = new google.visualization.DataTable();
-                data.addColumn('date', 'Date');
-                data.addColumn('number', 'Sales');
-                data.addColumn('number', 'Orders');
+                function drawChart() {
+                    var data = new google.visualization.DataTable();
+                    data.addColumn('date', 'Date');
+                    data.addColumn('number', 'Sales');
+                    data.addColumn('number', 'Orders');
 
-                data.addRows([
+                    data.addRows([
         <?php
         $advanced_dashboard_call_month = Advanced_Dashboard_Call_And_Chart::advanced_dashboard_call('month');
         if ($advanced_dashboard_call_month[1]->orders[0]->post_date) { # If there is any orders start data loop
             Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart_loop_value_orders();
         }
         ?>
-                ]);
-                var options = {
-                    series: {
-                        0: {targetAxisIndex: 0, lineWidth: 5, color: '#FFD700'},
-                        1: {targetAxisIndex: 1}
-                    },
-                    hAxis: {
-                        title: 'Time'
-                    },
-                    vAxis: {
-                        0: {title: 'Value'},
-                        1: {title: 'Orders'}
-                    },
-                    title: 'This Month Sales and Orders',
-                    legend: {position: 'bottom'}
-                };
+                    ]);
+                    var options = {
+                        series: {
+                            0: {targetAxisIndex: 0, lineWidth: 5, color: '#FFD700'},
+                            1: {targetAxisIndex: 1}
+                        },
+                        hAxis: {
+                            title: 'Time'
+                        },
+                        vAxis: {
+                            0: {title: 'Value'},
+                            1: {title: 'Orders'}
+                        },
+                        title: 'This Month Sales and Orders',
+                        legend: {position: 'bottom'}
+                    };
 
-                var formatter = new google.visualization.NumberFormat(
-                        {pattern: '###,###', suffix: " zł"});
-                formatter.format(data, 1);
+                    var formatter = new google.visualization.NumberFormat(
+                            {pattern: '###,###', suffix: " zł"});
+                    formatter.format(data, 1);
 
-                var chart1 = new google.visualization.LineChart(document.getElementById('chart1'));
+                    var chart1 = new google.visualization.LineChart(document.getElementById('chart1'));
 
-                chart1.draw(data, options);
-            }
+                    chart1.draw(data, options);
+                }
         </script>
 
         <?php
@@ -319,7 +326,6 @@ class Advanced_Dashboard_Chart_Scripts { # Google Charts JS
     public static function advanced_dashboard_chart_head2() { # Qty chart script
         ?>
 
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
         <script type="text/javascript">
             google.charts.load('current', {'packages': ['corechart', 'line']});
             google.charts.setOnLoadCallback(drawChart);
@@ -357,6 +363,13 @@ class Advanced_Dashboard_Chart_Scripts { # Google Charts JS
         </script>
 
         <?php
+    }
+
+    public static function advanced_dashboard_chart_custom_script() { # Custom script to header
+        wp_enqueue_script('jquery-ui-datepicker');
+        wp_register_style('jquery-ui', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css');
+        wp_enqueue_style('jquery-ui');
+        wp_enqueue_script('custom-js', plugins_url('scripts.js', __FILE__));
     }
 
 }
