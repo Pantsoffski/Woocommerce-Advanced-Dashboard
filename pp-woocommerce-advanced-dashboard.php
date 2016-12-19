@@ -1,20 +1,20 @@
 <?php
 
 /*
- * Plugin Name: WooCommerce Advanced Dashboard
+ * Plugin Name: Advanced Dashboard for WooCommerce
  * Plugin URI: http://ordin.pl/
- * Description: Plugin that gives you e.g. raports about sales in Wordpress dashboard.
+ * Description: Plugin that gives you e.g. raports about WooCommerce sales in Wordpress dashboard.
  * Author: Piotr Pesta
  * Version: 0.2.3
  * Author URI: http://ordin.pl/
  * License: GPL12
- * Text Domain: woocommerce-advanced-dashboard
+ * Text Domain: advanced-dashboard-for-woocommerce
  */
 
 define('ADVANCED_DASHBOARD_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
-//register_activation_hook(__FILE__, array('Woocommerce Advanced Dashboard', 'plugin_activation'));
-//register_deactivation_hook(__FILE__, array('Woocommerce Advanced Dashboard', 'plugin_deactivation'));
+//register_activation_hook(__FILE__, array('Advanced Dashboard for WooCommerce', 'plugin_activation'));
+//register_deactivation_hook(__FILE__, array('Advanced Dashboard for WooCommerce', 'plugin_deactivation'));
 
 add_action('plugins_loaded', 'pp_advanced_dashboard_main_init');
 

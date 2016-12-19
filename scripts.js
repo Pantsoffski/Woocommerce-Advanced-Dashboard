@@ -16,6 +16,10 @@ jQuery(function () {
     }
 });
 
+//jQuery(document).ready(function($) {
+//		$('#welcome-panel').after($('#advanced-dashboard-welcome-panel').show());
+//	});
+
 //function change_data_ad() {
 //    var gif_dir = jQuery("#gifDir").val();
 //    jQuery('#advanced-dashboard-ul').html("<center><p><img src='" + gif_dir + "' width='50%' /></p></center>");

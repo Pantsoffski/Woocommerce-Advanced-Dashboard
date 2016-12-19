@@ -24,7 +24,6 @@ class Advanced_Dashboard_Admin_Init { # Initialization
         add_action('admin_init', array('Advanced_Dashboard_Admin_Init', 'admin_init'));
         add_action('admin_menu', array('Advanced_Dashboard_Admin_Init', 'admin_menu'), 5); # Priority 5
         add_action('wp_dashboard_setup', array('Advanced_Dashboard_Admin_Init', 'wp_dashboard_setup'));
-        add_action('admin_head-index.php', array('Advanced_Dashboard_Admin_Init', 'two_columns'));
         add_action('admin_head', array('Advanced_Dashboard_Chart_Scripts', 'advanced_dashboard_chart_head1')); # Script1 to admin head
         add_action('admin_head', array('Advanced_Dashboard_Chart_Scripts', 'advanced_dashboard_chart_head2')); # Script2 to admin head
         add_action('admin_enqueue_scripts', array('Advanced_Dashboard_Chart_Scripts', 'advanced_dashboard_chart_custom_script')); # Custom script to admin head
@@ -38,12 +37,8 @@ class Advanced_Dashboard_Admin_Init { # Initialization
         
     }
 
-    public static function two_columns() { # Two Columns Dashboard Layout
-        add_screen_option('layout_columns', array('max' => 2, 'default' => 1));
-    }
-
     public static function wp_dashboard_setup() {
-        wp_add_dashboard_widget('advanced-dashboard-admin-widget', 'Woocommerce Advanced Dashboard', array('Advanced_Dashboard_View', 'advanced_dashboard_draw'));
+        wp_add_dashboard_widget('advanced-dashboard-admin-widget', 'Advanced Dashboard for WooCommerce', array('Advanced_Dashboard_View', 'advanced_dashboard_draw'));
     }
 
 }
@@ -54,54 +49,62 @@ class Advanced_Dashboard_View { # Dashboard view
         $advanced_dashboard_call_month = Advanced_Dashboard_Call_And_Chart::advanced_dashboard_call('month'); # Month interval
         $advanced_dashboard_call_day = Advanced_Dashboard_Call_And_Chart::advanced_dashboard_call('day'); # 1 Day interval
         ?>
-        <form action="" id="form1" method="post">
-            <input type="hidden" id="gifDir" value="<?php echo plugins_url('cat_loading.gif', __FILE__) ?>" />
-            <input type="date" name="startdate" class="datepicker" name="startdate" id="startdate" />
-            <input type="date" name="enddate" class="datepicker" name="enddate" id="enddate" />
-            <input type="submit" value="Apply" name="submitdates" id="submitdates" />
-            <?php
-            if (isset($_POST['startdate']) && isset($_POST['enddate'])) {
-                ?>
-                <input type="hidden" id="start" value="<?php echo $_POST['startdate'] ?>" />
-                <input type="hidden" id="end" value="<?php echo $_POST['enddate'] ?>" />
-                <?php
-            }
-            ?>
-        </form>
-        <ul id="advanced-dashboard-ul">
-            <li>
-                <div><?php echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart1_view(); ?></div>
-                <div><?php printf(__("<strong>%s</strong> net sales this month", 'woocommerce'), wc_price($advanced_dashboard_call_month[1]->net_sales)); ?></div>
-                <?php printf("<strong>%s</strong> - " . __("Net Sales amount", 'woocommerce'), wc_price($advanced_dashboard_call_day[1]->net_sales)); ?>
-            </li>
-            <li>
-                <div><?php echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart2_view(); ?></div>
-            </li>
-            <?php
-            if (!current_user_can('edit_shop_orders')) {
-                return;
-            }
-            $on_hold_count = 0;
-            $processing_count = 0;
+<!--        <div id="advanced-dashboard-welcome-panel" class="welcome-panel" style="display: none;">
+            <div class="welcome-panel-content">-->
+                <form action="" id="form1" method="post">
+                    <input type="hidden" id="gifDir" value="<?php echo plugins_url('cat_loading.gif', __FILE__) ?>" />
+                    <input type="date" name="startdate" class="datepicker" name="startdate" id="startdate" />
+                    <input type="date" name="enddate" class="datepicker" name="enddate" id="enddate" />
+                    <input type="submit" value="Apply" name="submitdates" id="submitdates" />
+                    <?php
+                    if (isset($_POST['startdate']) && isset($_POST['enddate'])) {
+                        ?>
+                        <input type="hidden" id="start" value="<?php echo $_POST['startdate'] ?>" />
+                        <input type="hidden" id="end" value="<?php echo $_POST['enddate'] ?>" />
+                        <?php
+                    }
+                    ?>
+                </form>
+                <ul id="advanced-dashboard-ul">
+                    <li>
+                        <div><?php echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart1_view(); ?></div>
+                    </li>
+                    <li>
+                        <div><?php echo Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart2_view(); ?></div>
+                    </li>
+                    <?php
+                    if (!current_user_can('edit_shop_orders')) {
+                        return;
+                    }
+                    $on_hold_count = 0;
+                    $processing_count = 0;
 
-            foreach (wc_get_order_types('order-count') as $type) {
-                $counts = (array) wp_count_posts($type);
-                $on_hold_count += isset($counts['wc-on-hold']) ? $counts['wc-on-hold'] : 0;
-                $processing_count += isset($counts['wc-processing']) ? $counts['wc-processing'] : 0;
-            }
-            ?>
-            <li class="processing-orders">
-                <a href="<?php echo admin_url('edit.php?post_status=wc-processing&post_type=shop_order'); ?>">
-                    <?php printf(_n("<strong>%s order</strong> awaiting processing", "<strong>%s orders</strong> awaiting processing", $processing_count, 'woocommerce'), $processing_count); ?>
-                </a>
-            </li>
-            <li class="on-hold-orders">
-                <a href="<?php echo admin_url('edit.php?post_status=wc-on-hold&post_type=shop_order'); ?>">
-                    <?php printf(_n("<strong>%s order</strong> on-hold", "<strong>%s orders</strong> on-hold", $on_hold_count, 'woocommerce'), $on_hold_count); ?>
-                </a>
-            </li>
+                    foreach (wc_get_order_types('order-count') as $type) {
+                        $counts = (array) wp_count_posts($type);
+                        $on_hold_count += isset($counts['wc-on-hold']) ? $counts['wc-on-hold'] : 0;
+                        $processing_count += isset($counts['wc-processing']) ? $counts['wc-processing'] : 0;
+                    }
+                    ?>
+                    <li class="sales-this-month">
+                        <?php printf(__("<strong>%s</strong> net sales this month", 'woocommerce'), wc_price($advanced_dashboard_call_month[1]->net_sales)); ?>
+                    </li>
+                    <li class="sales-this-month">
+                        <?php printf("<strong>%s</strong> - " . __("Net Sales amount", 'woocommerce'), wc_price($advanced_dashboard_call_day[1]->net_sales)); ?>
+                    </li>
+                    <li class="processing-orders">
+                        <a href="<?php echo admin_url('edit.php?post_status=wc-processing&post_type=shop_order'); ?>">
+                            <?php printf(_n("<strong>%s order</strong> awaiting processing", "<strong>%s orders</strong> awaiting processing", $processing_count, 'woocommerce'), $processing_count); ?>
+                        </a>
+                    </li>
+                    <li class="on-hold-orders">
+                        <a href="<?php echo admin_url('edit.php?post_status=wc-on-hold&post_type=shop_order'); ?>">
+                            <?php printf(_n("<strong>%s order</strong> on-hold", "<strong>%s orders</strong> on-hold", $on_hold_count, 'woocommerce'), $on_hold_count); ?>
+                        </a>
+                    </li>
 
-        </ul>
+                </ul>
+<!--            </div>
+        </div>-->
         <?php
     }
 
@@ -173,14 +176,14 @@ class Advanced_Dashboard_Call_And_Chart {
             $valueFormat = DateTime::createFromFormat('Y/m/j', $JSdata['date']);
             $Comparedate = $valueFormat->format('Y/m/j');
             self::$Currentdate = date('Y/m/j', time());
-            if ($Comparedate > self::$Currentdate) {
-                break;
-            }
             $year = $valueFormat->format('Y');
             $month = $valueFormat->format('m') - 1;
             $day = $valueFormat->format('j');
             $valueSet = $year . ", " . $month . ", " . $day;
             echo "[new Date(" . $valueSet . "), " . $JSdata['value'] . ", " . $JSdata['orders'] . "],";
+            if ($Comparedate == self::$Currentdate) {
+                break;
+            }
         }
     }
 
@@ -207,14 +210,14 @@ class Advanced_Dashboard_Call_And_Chart {
         foreach ($JStable as $JSdataQty) {
             $formatDate = DateTime::createFromFormat('Y/m/d', $JSdataQty['date']);
             $Comparedate = $formatDate->format('Y/m/j');
-            if ($Comparedate > self::$Currentdate) {
-                break;
-            }
             $year = $formatDate->format('Y');
             $month = $formatDate->format('m') - 1;
             $day = $formatDate->format('j');
             $valueSet = $year . ", " . $month . ", " . $day;
             echo "[new Date(" . $valueSet . "), " . $JSdataQty['qty'] . "],";
+            if ($Comparedate == self::$Currentdate) {
+                break;
+            }
         }
     }
 
@@ -343,7 +346,8 @@ class Advanced_Dashboard_Chart_Scripts { # Google Charts JS
                         1: {targetAxisIndex: 1}
                     },
                     hAxis: {
-                        title: 'Time'
+                        title: 'Time',
+                        textPosition: 'none'
                     },
                     vAxes: {
                         0: {
@@ -353,8 +357,8 @@ class Advanced_Dashboard_Chart_Scripts { # Google Charts JS
                             textPosition: 'none'
                         }
                     },
-                    title: 'This Month Sales and Orders',
-                    legend: {position: 'bottom'}
+                    title: 'Sales Value and Number of Orders',
+                    legend: {position: 'top'}
                 };
 
                 var formatter = new google.visualization.NumberFormat(
@@ -392,15 +396,16 @@ class Advanced_Dashboard_Chart_Scripts { # Google Charts JS
                 ]);
                 var options2 = {
                     hAxis: {
-                        title: 'Time'
+                        title: 'Time',
+                        textPosition: 'none'
                     },
                     vAxis: {
                         title: 'Quantity'
                     },
                     lineWidth: 5,
                     color: 'blue',
-                    title: 'This Month Quantity Sold',
-                    legend: {position: 'bottom'}
+                    title: 'Quantity Sold',
+                    legend: {position: 'none'}
                 };
 
                 var chart2 = new google.visualization.LineChart(document.getElementById('chart2'));
