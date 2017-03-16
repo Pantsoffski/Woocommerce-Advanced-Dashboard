@@ -335,7 +335,7 @@ class Advanced_Dashboard_Chart_Scripts { # Google Charts JS
                 data.addRows([
         <?php
         $advanced_dashboard_call_month = Advanced_Dashboard_Call_And_Chart::advanced_dashboard_call('month');
-        if ($advanced_dashboard_call_month[1]->orders[0]->post_date) { # If there is any orders start data loop
+        if (isset($advanced_dashboard_call_month[1]->orders[0]->post_date)) { # If there is any orders start data loop
             Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart_loop_value_orders();
         }
         ?>
@@ -389,7 +389,7 @@ class Advanced_Dashboard_Chart_Scripts { # Google Charts JS
                 data2.addRows([
         <?php
         $advanced_dashboard_call_month = Advanced_Dashboard_Call_And_Chart::advanced_dashboard_call('month');
-        if ($advanced_dashboard_call_month[1]->orders[0]->post_date) { # If there is any orders start data loop
+        if (isset($advanced_dashboard_call_month[1]->orders[0]->post_date)) { # If there is any orders start data loop
             Advanced_Dashboard_Call_And_Chart::advanced_dashboard_chart_loop_qty();
         }
         ?>

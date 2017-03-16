@@ -5,7 +5,7 @@
  * Plugin URI: http://ordin.pl/
  * Description: Plugin that gives you e.g. raports about WooCommerce sales in Wordpress dashboard.
  * Author: Piotr Pesta
- * Version: 0.2.3
+ * Version: 0.2.4
  * Author URI: http://ordin.pl/
  * License: GPL12
  * Text Domain: advanced-dashboard-for-woocommerce
