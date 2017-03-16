@@ -6,7 +6,7 @@ Tags: plugin, woocommerce, dashboard, reports, sales, quantity, advanced
 Author: Piotr Pesta
 Requires at least: 4.5
 Tested up to: 4.7
-Stable tag: 0.2.4
+Stable tag: 0.2.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,6 +34,8 @@ Or just add .zip file as a new plugin in your Wordpress administration panel.
 1. Screenshot 1 - Advanced Dashboard for WooCommerce.
 
 == Changelog ==
+= 0.2.5 =
+* minor bug fix
 = 0.2.4 =
 * minor bug fix
 = 0.2.3 =
