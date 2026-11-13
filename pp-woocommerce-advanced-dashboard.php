@@ -1,30 +1,41 @@
 <?php
-
-/*
+/**
  * Plugin Name: Advanced Dashboard for WooCommerce
  * Plugin URI: http://ordin.pl/
- * Description: Plugin that gives you e.g. raports about WooCommerce sales in Wordpress dashboard.
+ * Description: Readable sales, order and product quantity charts on the WordPress dashboard.
  * Author: Piotr Pesta
- * Version: 0.2.5
+ * Version: 1.0.0
  * Author URI: http://ordin.pl/
- * License: GPL12
+ * License: GPLv2 or later
  * Text Domain: advanced-dashboard-for-woocommerce
+ * Requires at least: 7.0.8
+ * Requires PHP: 8.2.35
+ * Requires Plugins: woocommerce
+ * WC requires at least: 11.2.2
+ * WC tested up to: 11.3.0
+ *
+ * @package AdvancedDashboardForWooCommerce
  */
 
-define('ADVANCED_DASHBOARD_PLUGIN_DIR', plugin_dir_path(__FILE__));
+defined( 'ABSPATH' ) || exit;
 
-//register_activation_hook(__FILE__, array('Advanced Dashboard for WooCommerce', 'plugin_activation'));
-//register_deactivation_hook(__FILE__, array('Advanced Dashboard for WooCommerce', 'plugin_deactivation'));
+add_action(
+	'before_woocommerce_init',
+	static function () {
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+		}
+	}
+);
 
-add_action('plugins_loaded', 'pp_advanced_dashboard_main_init');
+require_once __DIR__ . '/includes/class-adwc-date-range.php';
+require_once __DIR__ . '/includes/class-adwc-analytics.php';
+require_once __DIR__ . '/includes/class-adwc-operations.php';
+require_once __DIR__ . '/includes/class-adwc-plugin.php';
 
-function pp_advanced_dashboard_main_init() {
-    if (class_exists('WooCommerce')) {
-        if (is_admin()) {
-            require_once( ADVANCED_DASHBOARD_PLUGIN_DIR . 'classes.php' );
-            add_action('init', array('Advanced_Dashboard_Admin_Init', 'init'));
-        }
-    } else {
-        echo 'WooCommerce is not Active.';
-    }
-}
+add_action(
+	'plugins_loaded',
+	static function () {
+		ADWC_Plugin::init( __FILE__ );
+	}
+);

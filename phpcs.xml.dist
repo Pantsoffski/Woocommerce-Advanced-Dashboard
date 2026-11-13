@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<ruleset name="ADWC">
+    <description>WordPress standards for runtime PHP; development fixtures are checked separately.</description>
+    <file>pp-woocommerce-advanced-dashboard.php</file>
+    <file>includes</file>
+    <file>templates</file>
+    <arg name="extensions" value="php"/>
+    <rule ref="WordPress"/>
+    <rule ref="WordPress.WP.Capabilities">
+        <properties>
+            <property name="custom_capabilities" type="array">
+                <element value="view_woocommerce_reports"/>
+                <element value="edit_shop_orders"/>
+                <element value="edit_shop_order"/>
+            </property>
+        </properties>
+    </rule>
+</ruleset>

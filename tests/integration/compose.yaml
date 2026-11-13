@@ -1,0 +1,63 @@
+# Isolated synthetic store. No production credentials, databases or shared project volumes.
+name: adwc-stage2-local
+services:
+  db:
+    image: mariadb:lts
+    environment:
+      MARIADB_DATABASE: adwc_stage2_isolated
+      MARIADB_USER: adwc_local
+      MARIADB_PASSWORD: adwc-local-db-only
+      MARIADB_ROOT_PASSWORD: adwc-local-root-only
+    volumes:
+      - database:/var/lib/mysql
+    networks: [sandbox]
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  wordpress:
+    image: wordpress:7.1.4-php8.3-apache
+    ports:
+      - "127.0.0.1:38971:80"
+    environment: &wp_environment
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: adwc_stage2_isolated
+      WORDPRESS_DB_USER: adwc_local
+      WORDPRESS_DB_PASSWORD: adwc-local-db-only
+      WORDPRESS_DEBUG: "1"
+      WORDPRESS_CONFIG_EXTRA: |
+        define( 'WP_ENVIRONMENT_TYPE', 'local' );
+        define( 'ADWC_INTEGRATION_SANDBOX', true );
+        define( 'WP_DEBUG_LOG', true );
+        define( 'WP_DEBUG_DISPLAY', false );
+        define( 'DISABLE_WP_CRON', true );
+        define( 'AUTOMATIC_UPDATER_DISABLED', true );
+        define( 'DISALLOW_FILE_EDIT', true );
+        define( 'WP_HTTP_BLOCK_EXTERNAL', true );
+        define( 'SAVEQUERIES', true );
+    volumes: &wp_volumes
+      - wordpress:/var/www/html
+      - ../..:/var/www/html/wp-content/plugins/advanced-dashboard-for-woocommerce:ro
+      - woocommerce:/var/www/html/wp-content/plugins/woocommerce
+      - ./sandbox.php:/var/www/html/wp-content/mu-plugins/adwc-sandbox.php:ro
+    networks: [sandbox]
+    depends_on:
+      db:
+        condition: service_healthy
+  cli:
+    image: wordpress:cli-php8.3
+    user: "33:33"
+    environment: *wp_environment
+    volumes: *wp_volumes
+    networks: [sandbox]
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  database:
+  wordpress:
+  woocommerce:
+networks:
+  sandbox:
+    driver: bridge

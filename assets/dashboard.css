@@ -1,0 +1,69 @@
+#advanced-dashboard-admin-widget .adwc {
+	--adwc-blue: #135e96;
+	--adwc-green: #007c65;
+	--adwc-purple: #7149a1;
+	color: #1d2327;
+}
+#advanced-dashboard-admin-widget .adwc [hidden] { display: none !important; }
+#advanced-dashboard-admin-widget .adwc-filters,
+#advanced-dashboard-admin-widget .adwc-custom { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+#advanced-dashboard-admin-widget .adwc-filters label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; }
+#advanced-dashboard-admin-widget .adwc-filters select,
+#advanced-dashboard-admin-widget .adwc-filters input { max-width: 100%; margin: 0; min-height: 32px; }
+#advanced-dashboard-admin-widget .adwc-caption { color: #50575e; font-size: 12px; }
+#advanced-dashboard-admin-widget .adwc-status { padding: 10px 12px; background: #f0f6fc; border-left: 3px solid #2271b1; }
+#advanced-dashboard-admin-widget .adwc-status[data-state="error"],
+#advanced-dashboard-admin-widget .adwc-status[data-state="unavailable"] { background: #fcf9e8; border-color: #996800; }
+#advanced-dashboard-admin-widget .adwc-period { font-weight: 600; margin-top: 16px; }
+#advanced-dashboard-admin-widget .adwc-totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); gap: 8px; }
+#advanced-dashboard-admin-widget .adwc-totals > div { padding: 12px; border: 1px solid #dcdcde; border-radius: 4px; background: #f6f7f7; overflow-wrap: anywhere; }
+#advanced-dashboard-admin-widget .adwc-totals span { display: block; color: #50575e; font-size: 12px; }
+#advanced-dashboard-admin-widget .adwc-totals strong { display: block; font-size: 20px; line-height: 1.5; font-variant-numeric: tabular-nums; }
+#advanced-dashboard-admin-widget .adwc-chart { margin: 12px 0; }
+#advanced-dashboard-admin-widget .adwc-chart h3 { font-size: 14px; margin: 0 0 4px; padding: 0; }
+#advanced-dashboard-admin-widget .adwc-unit { font-weight: normal; color: #50575e; }
+#advanced-dashboard-admin-widget .adwc-plot { border-radius: 3px; }
+#advanced-dashboard-admin-widget .adwc-plot:focus-visible,
+#advanced-dashboard-admin-widget .adwc summary:focus-visible,
+#advanced-dashboard-admin-widget .adwc-table-scroll:focus-visible { outline: 2px solid #2271b1; outline-offset: 3px; }
+#advanced-dashboard-admin-widget .adwc-plot svg { display: block; width: 100%; height: 180px; overflow: visible; }
+#advanced-dashboard-admin-widget .adwc-plot text { fill: #50575e; font: 11px system-ui, sans-serif; }
+#advanced-dashboard-admin-widget .adwc-grid { stroke: #dcdcde; stroke-width: 1; }
+#advanced-dashboard-admin-widget .adwc-line { fill: none; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+#advanced-dashboard-admin-widget .adwc-marker { stroke: #50575e; stroke-dasharray: 3 3; }
+#advanced-dashboard-admin-widget .adwc-point { font-size: 12px; min-height: 1.5em; margin: 0; font-variant-numeric: tabular-nums; }
+#advanced-dashboard-admin-widget .adwc-table-details summary { cursor: pointer; color: #135e96; padding: 8px 0; }
+#advanced-dashboard-admin-widget .adwc-table-scroll { max-height: 360px; overflow: auto; }
+#advanced-dashboard-admin-widget .adwc-table-scroll table { min-width: 390px; }
+#advanced-dashboard-admin-widget .adwc-table-scroll caption { text-align: start; padding: 8px; }
+#advanced-dashboard-admin-widget .adwc-table-scroll td { font-variant-numeric: tabular-nums; }
+#advanced-dashboard-admin-widget .adwc-definition { padding-top: 12px; border-top: 1px solid #dcdcde; color: #50575e; font-size: 12px; }
+#advanced-dashboard-admin-widget .adwc-statuses { color: #50575e; font-size: 12px; }
+#advanced-dashboard-admin-widget .adwc-counts { display: flex; gap: 24px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #dcdcde; }
+#advanced-dashboard-admin-widget .adwc-counts strong { font-size: 22px; display: block; }
+#advanced-dashboard-admin-widget .adwc-counts span { color: #50575e; }
+#advanced-dashboard-admin-widget .adwc-operations { border-top: 1px solid #dcdcde; margin-top: 20px; padding-top: 16px; }
+#advanced-dashboard-admin-widget .adwc-operations h3 { margin: 0 0 12px; padding: 0; font-size: 15px; }
+#advanced-dashboard-admin-widget .adwc-operations .adwc-counts { border: 0; margin: 0; padding: 0; flex-wrap: wrap; }
+#advanced-dashboard-admin-widget .adwc-preferences { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+#advanced-dashboard-admin-widget .adwc-preferences > label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; }
+#advanced-dashboard-admin-widget .adwc-preferences input[type="number"] { width: 110px; max-width: 100%; }
+#advanced-dashboard-admin-widget .adwc-preferences details { padding-top: 3px; max-width: 100%; }
+#advanced-dashboard-admin-widget .adwc-preferences summary { cursor: pointer; color: #135e96; padding: 4px 0; }
+#advanced-dashboard-admin-widget .adwc-preferences fieldset { display: grid; gap: 8px; margin: 10px 0; }
+#advanced-dashboard-admin-widget .adwc-preferences fieldset label { overflow-wrap: anywhere; }
+#advanced-dashboard-admin-widget .adwc-operations-status[data-state="error"] { color: #8a2424; }
+#advanced-dashboard-admin-widget .adwc-order-list { list-style: none; margin: 12px 0; padding: 0; }
+#advanced-dashboard-admin-widget .adwc-order-list li { border-top: 1px solid #dcdcde; padding: 10px 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; overflow-wrap: anywhere; }
+#advanced-dashboard-admin-widget .adwc-order-list a { font-weight: 600; }
+#advanced-dashboard-admin-widget .adwc-order-list time { display: block; font-size: 12px; color: #50575e; }
+#advanced-dashboard-admin-widget .adwc-order-status { grid-column: 1; color: #50575e; font-size: 12px; }
+#advanced-dashboard-admin-widget .adwc-order-age { grid-column: 2; grid-row: 1 / 3; align-self: center; font-size: 12px; font-variant-numeric: tabular-nums; }
+#advanced-dashboard-admin-widget .adwc-settings { margin-bottom: 0; }
+@media (forced-colors: active) {
+	#advanced-dashboard-admin-widget .adwc-line { stroke: CanvasText !important; }
+	#advanced-dashboard-admin-widget .adwc-plot circle { fill: CanvasText !important; }
+}
+
+#advanced-dashboard-admin-widget .adwc-method-details > summary,
+#advanced-dashboard-admin-widget .adwc-queue-details > summary { cursor: pointer; color: #135e96; padding: 8px 0; }

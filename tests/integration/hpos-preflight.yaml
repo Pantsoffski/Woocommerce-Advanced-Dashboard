@@ -1,0 +1,4 @@
+services:
+  wordpress:
+    ports: !override
+      - "127.0.0.1:38972:80"

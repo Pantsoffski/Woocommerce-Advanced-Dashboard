@@ -1,0 +1,8 @@
+/.git
+/.gitattributes
+/.gitignore
+/.distignore
+/.dev-tools
+/tests
+/docs
+/phpcs.xml.dist

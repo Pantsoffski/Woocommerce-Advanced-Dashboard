@@ -1,0 +1,29 @@
+# Use with isolated adwc-stage4-floor, adwc-stage4-floor-hpos or adwc-stage4-upgrade projects only.
+services:
+  wordpress:
+    # The core is pinned to 7.0.8 from the official archive before installation.
+    image: wordpress:php8.2-apache
+    ports: !override
+      - "127.0.0.1:${ADWC_STAGE4_PORT:-38973}:80"
+    volumes: !override
+      - wordpress:/var/www/html
+      - plugins:/var/www/html/wp-content/plugins
+      - woocommerce:/var/www/html/wp-content/plugins/woocommerce
+      - ./sandbox.php:/var/www/html/wp-content/mu-plugins/adwc-sandbox.php:ro
+      - ./stage4-probe.php:/var/www/html/wp-content/mu-plugins/adwc-stage4-probe.php:ro
+      - ./:/adwc-tests:ro
+      - ../../.dev-tools/release-candidate/advanced-dashboard-for-woocommerce-local-rc-0.2.5.zip:/adwc-local-rc.zip:ro
+      - ../../.dev-tools/release-candidate/manifest.json:/adwc-manifest.json:ro
+  cli:
+    image: wordpress:cli-php8.2
+    volumes: !override
+      - wordpress:/var/www/html
+      - plugins:/var/www/html/wp-content/plugins
+      - woocommerce:/var/www/html/wp-content/plugins/woocommerce
+      - ./sandbox.php:/var/www/html/wp-content/mu-plugins/adwc-sandbox.php:ro
+      - ./stage4-probe.php:/var/www/html/wp-content/mu-plugins/adwc-stage4-probe.php:ro
+      - ./:/adwc-tests:ro
+      - ../../.dev-tools/release-candidate/advanced-dashboard-for-woocommerce-local-rc-0.2.5.zip:/adwc-local-rc.zip:ro
+      - ../../.dev-tools/release-candidate/manifest.json:/adwc-manifest.json:ro
+volumes:
+  plugins:
