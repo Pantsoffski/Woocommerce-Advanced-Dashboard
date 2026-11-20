@@ -9,10 +9,14 @@ import zipfile
 root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
 parser.add_argument('--version', default='1.0.0', choices=['0.2.5', '1.0.0'])
-version = parser.parse_args().version
+parser.add_argument('--rc', type=int, choices=[1, 2], help='Build a numbered candidate in its own directory')
+options = parser.parse_args()
+version = options.version
 assert re.search(r'Version: ' + re.escape(version) + r'\s', (root / 'pp-woocommerce-advanced-dashboard.php').read_text())
 assert 'Stable tag: ' + version in (root / 'readme.txt').read_text()
 output = root / '.dev-tools' / 'release-candidate' / version
+if options.rc:
+    output /= f'rc{options.rc}'
 output.mkdir(parents=True, exist_ok=True)
 rules = [line.strip().lstrip('/') for line in (root / '.distignore').read_text().splitlines()
          if line.strip() and not line.lstrip().startswith('#')]
@@ -31,7 +35,8 @@ for path in root.rglob('*'):
         files.append(relative)
 if set(files) != expected:
     raise RuntimeError(f'Unexpected candidate content: extra={set(files)-expected}, missing={expected-set(files)}')
-archive = output / f'advanced-dashboard-for-woocommerce-local-rc-{version}.zip'
+name = f'{version}-rc{options.rc}' if options.rc else f'local-rc-{version}'
+archive = output / f'advanced-dashboard-for-woocommerce-{name}.zip'
 slug = 'advanced-dashboard-for-woocommerce'
 manifest = {}
 with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as bundle:

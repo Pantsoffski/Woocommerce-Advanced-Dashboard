@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Advanced Dashboard for WooCommerce
- * Plugin URI: http://ordin.pl/
+ * Plugin URI: https://github.com/Pantsoffski/Woocommerce-Advanced-Dashboard
  * Description: Readable sales, order and product quantity charts on the WordPress dashboard.
  * Author: Piotr Pesta
  * Version: 1.0.0
- * Author URI: http://ordin.pl/
+ * Author URI: https://profiles.wordpress.org/piotr-pesta/
  * License: GPLv2 or later
  * Text Domain: advanced-dashboard-for-woocommerce
  * Requires at least: 7.0.8

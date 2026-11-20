@@ -66,4 +66,5 @@
 }
 
 #advanced-dashboard-admin-widget .adwc-method-details > summary,
+#advanced-dashboard-admin-widget .adwc-operations-help > summary,
 #advanced-dashboard-admin-widget .adwc-queue-details > summary { cursor: pointer; color: #135e96; padding: 8px 0; }

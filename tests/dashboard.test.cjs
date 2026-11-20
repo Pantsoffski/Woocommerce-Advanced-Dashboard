@@ -62,6 +62,10 @@ const server = http.createServer((req, res) => {
 		check((await page.locator('.adwc-point').first().textContent()).includes('0,00'), 'ArrowRight inspects a zero-sales day');
 		await page.keyboard.press('End');
 		check((await page.locator('.adwc-point').first().textContent()).includes('900,00'), 'End inspects last day');
+		const bounds = await plot.boundingBox();
+		await page.mouse.move(bounds.x + 61, bounds.y + 25);
+		await page.waitForFunction(() => document.querySelector('.adwc-point').textContent.includes('1 340,50'));
+		check((await page.locator('.adwc-chart-announcement').first().textContent()).includes('900,00'), 'Hover inspects first day without overwriting the keyboard announcement');
 		await page.screenshot({ path: path.join(project, '.dev-tools/dashboard-desktop.png'), fullPage: true });
 		await page.setViewportSize({ width: 360, height: 1100 });
 		await page.waitForFunction(() => document.querySelector('svg').viewBox.baseVal.width < 400);
@@ -77,7 +81,11 @@ const server = http.createServer((req, res) => {
 		check(requests.at(-1).url.searchParams.get('from') === '2026-11-07' && requests.at(-1).url.searchParams.get('to') === '2026-11-13', 'Custom dates are sent to the validated endpoint');
 		mode = 'empty'; await page.locator('.adwc-filters button[type=submit]').click();
 		await page.locator('.adwc-status[data-state=empty]').waitFor();
-		check(await page.locator('.adwc-line').count() === 3, 'Empty store retains readable zero charts');
+		check(await page.locator('.adwc-charts').isHidden() && await page.locator('.adwc-report').isVisible(), 'A verified empty report hides charts while retaining the report');
+		check((await page.locator('.adwc-totals strong').allTextContents()).join(',') === '0,0,0' && await page.locator('.adwc-table-details tbody tr').count() === 7, 'Empty report retains three zero totals and daily rows');
+		mode = 'ready'; await page.locator('.adwc-filters button[type=submit]').click();
+		await page.locator('.adwc-line').first().waitFor({ state: 'visible' });
+		check(await page.locator('.adwc-line:visible').count() === 3, 'Charts reappear when returning from an empty range');
 		mode = 'unavailable'; await page.locator('.adwc-filters button[type=submit]').click();
 		await page.locator('.adwc-status[data-state=unavailable]').waitFor();
 		check(await page.locator('.adwc-report').isHidden() && await page.locator('.adwc-counts').isVisible(), 'Unavailable Analytics withholds graphs and preserves operational counts');

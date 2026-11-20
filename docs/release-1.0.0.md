@@ -1,5 +1,89 @@
 # 1.0.0 local release candidate — freeze record
 
+## Final 1.0.0 preflight · stage 7
+
+The final local release set is `.dev-tools/wordpress-org/release-1.0.0-final/`. Its `trunk/` and `tags/1.0.0/` directories contain ten identical plugin files each. The code matches RC2 byte for byte, and the readme matches the stage 6 listing copy. The eight directory graphics are in `assets/`, including the new screenshot of the synthetic queue with the normal status label. The manifest lists all 28 SVN paths and their SHA-256 values.
+
+The official WordPress.org readme validator and Plugin Check on the unpacked final ZIP passed. Version, stable tag, widget identity, directory layout, ZIP integrity and screenshot captions were verified. This is the package for any separately approved publication. The older RC1 and RC2 references below document the earlier test runs.
+
+```text
+ZIP: .dev-tools/wordpress-org/release-1.0.0-final/advanced-dashboard-for-woocommerce-1.0.0.zip
+SHA-256: a5273b0b842ad7222346ef37467ba1231c45700a0ea29c918e5b6c88c75ece83
+Manifest: .dev-tools/wordpress-org/release-1.0.0-final/manifest.json
+```
+
+## WordPress.org presentation · stage 6
+
+The local review set is in `.dev-tools/wordpress-org/1.0.0/`. `assets/` contains two icons, two banners and four screenshots captured in Chromium from the RC2 dashboard with synthetic data. `source/` contains editable SVGs, `previous/` holds the four original public graphics and the prior RC2 readme, and `preview.html` shows the new artwork, copy and archived graphics together. `manifest.json` records intended additions and replacements, dimensions, file sizes and hashes.
+
+The public assets listing at SVN revision 3814029 contained two icons, one standard banner and one screenshot. The WordPress.org plugin API identified the public version as 0.2.5. Both endpoints were read over HTTPS. [Public asset directory](https://plugins.svn.wordpress.org/advanced-dashboard-for-woocommerce/assets/) · [WordPress.org asset conventions](https://developer.wordpress.org/plugins/wordpress-org/plugin-assets/)
+
+The English `readme.txt` was prepared for the listing and copied to the review set. The installed RC2 passed Plugin Check with the revised readme mounted read-only for validation. The local parser checked headers, FAQ and upgrade notice. Numbered screenshot captions were validated separately because the local parser has no directory Markdown renderer. The contributor login was checked against the public WordPress.org record. PNG structure, prescribed dimensions and preview rendering passed.
+
+All packaged RC2 code matched the workspace. The frozen RC2 archive retains its original SHA-256 and readme. Any future authorized release would pair the revised readme with that code and place the eight catalog PNGs in the top-level WordPress.org `assets/` directory. This review set stays local.
+
+## RC2 · 20 November 2026
+
+**READY for owner review.** RC2 is the current local candidate. WordPress continues to recognize the plugin as version 1.0.0. RC1 remains archived with its original checksum.
+
+- Verified empty reports retain the three zero totals and the daily table. A single status message replaces the flat charts. Error and unavailable responses still withhold the report.
+- Moving the mouse selects the nearest day and displays its exact value. Pointer events are grouped by animation frame and the display updates only when the selected day changes. Touch and keyboard selection are retained. Hover leaves focus and the keyboard live announcement alone.
+- The chart help retains the metric and refund definitions. The order review help holds the details about counts, selection, age and timezone. The warning that age alone does not mean an order is late stays visible next to the queue controls.
+
+| Check | Result |
+| --- | --- |
+| Real Chromium in the existing CPT and HPOS stores, posts sync off | **PASS** at 1440, 768 and 390 px. Populated and empty ranges, HTTP 400, return to populated range, mouse hover, simulated touch, keyboard and native disclosures. No horizontal overflow or browser exceptions. |
+| Actual Analytics disabled in CPT | **PASS**. Report withheld and operations remained available. Original sandbox option restored. |
+| PHP / mocked browser / syntax / WPCS | **PASS**, 78 PHP and 24 Chromium checks. Changed PHP/JS passed syntax checks. WPCS clean. |
+| ZIP on existing CPT package sandbox | **PASS**. The ten installed files match the manifest. Plugin Check reported no errors. Header, dependency, HPOS declaration and real Analytics read passed. |
+| Full matrix, physical touch hardware, screen-reader audit and fresh legacy upgrade rehearsal | **NOT RUN** for RC2. The RC1 record below documents the separate real 0.2.5 update test. |
+
+The only runtime files that differ from RC1 are `assets/dashboard.js`, `assets/dashboard.css` and `templates/dashboard.php`. ZIP CRC, version metadata, the ten-file allowlist and file SHA-256 values were verified. No publication action was taken.
+
+```text
+Build: python tests/build-local-candidate.py --version 1.0.0 --rc 2
+ZIP: .dev-tools/release-candidate/1.0.0/rc2/advanced-dashboard-for-woocommerce-1.0.0-rc2.zip
+Size: 24924 bytes
+SHA-256: c5370d99747f7189c5eecbb122c6ff8f417dd05099a3cca16a1eb776505e0c9b
+Manifest: .dev-tools/release-candidate/1.0.0/rc2/manifest.json
+Screenshots: .dev-tools/rc2/screenshots/
+```
+
+The stage 7 record above supersedes this candidate for publication.
+
+## RC1 · 20 November 2026
+
+**READY for owner review.** RC1 supersedes the 13 November local package documented below. The stage 1–4 records describe the versions and decisions at the time of each stage. References to 0.2.5 in the current readme document upgrade compatibility and release history.
+
+The WordPress.org contributor field now uses the verified login `piotr-pesta`. The plugin header keeps Piotr Pesta as the author and links to the plugin repository and the author's WordPress.org profile. The public readme describes installation and upgrade. The ZIP comment records the local status and the requirement for separate publication approval. The license remains GPLv2 or later. [WordPress.org readme format](https://developer.wordpress.org/plugins/wordpress-org/how-your-readme-txt-works/) · [Author's WordPress.org profile](https://profiles.wordpress.org/piotr-pesta/)
+
+The visual review caught trailing commas in the English chart-axis dates and a note that implied historical custom ranges included today. Axis labels now use a localized formatter without the year. The date caption applies to every preset and custom range. The three charts, queue, permissions and data semantics retain their prior behavior.
+
+| Check | Result |
+| --- | --- |
+| Real Chromium on existing CPT review store | **PASS**. Seven screenshots cover 1440, 768 and 390 px, expanded queue, custom range, valid zero results and HTTP 400 for reversed dates. Keyboard chart navigation and the queue disclosure work. No overlapping or clipped SVG labels, horizontal overflow or page exceptions at those widths. Collapsed widget heights were 1553, 1537 and 1682 px. |
+| ZIP contents and bytes | **PASS**. 24,639 bytes with the same ten distribution paths listed below. CRC and SHA-256 verified. Installed files in both new sandboxes exactly match the manifest. |
+| Plugin Check on installed RC1 / WPCS / syntax | **PASS**. Plugin Check 2.2.0 reports no errors, PHPCS/WPCS reports zero errors and warnings, and the changed PHP/JS files pass syntax checks. |
+| Installed ZIP in CPT and HPOS | **PASS**. WP 7.0.8 / WC 11.2.2 / PHP 8.2.35. Live SVG charts, nonzero Analytics totals, queue counters and editor links verified in both modes. HPOS synchronization with posts was off and the three new synthetic orders had no legacy order posts. |
+| Native 0.2.5 → 1.0.0 update with RC1 | **PASS**. A separate CPT sandbox activated the original 0.2.5. `Plugin_Upgrader` installed the local ZIP, removed old assets, and the test verified standard reactivation, widget identity and native preferences, settings and selected fields of three synthetic orders. |
+| Targeted browser regression | **PASS**, 21 mock API checks in addition to the real browser runs above. |
+| Full compatibility matrix, high-volume testing, third-party integrations and full assistive-technology audit | **NOT RUN** for RC1. See the earlier verification scope below. |
+
+The initial installation needed writable `wp-content/upgrade` directories in the new containers. The first HPOS fixture also exposed missing WooCommerce tables after HPOS was selected before WooCommerce activation. WooCommerce's table initializer corrected the new sandbox. The subsequent populated smoke test passed. These adjustments affected only RC1 test infrastructure.
+
+```text
+Build: python tests/build-local-candidate.py --version 1.0.0 --rc 1
+ZIP: .dev-tools/release-candidate/1.0.0/rc1/advanced-dashboard-for-woocommerce-1.0.0-rc1.zip
+SHA-256: 602aa1a60c8b4aed23eace34c3153db71f02940a43ceec68be23fec92dc35441
+Manifest: .dev-tools/release-candidate/1.0.0/rc1/manifest.json
+Screenshots: .dev-tools/rc1/screenshots/
+Logs: .dev-tools/rc1/
+```
+
+For any future, separately authorized publication use the RC1 artifact and SHA-256 above in place of the historical values in the instructions below. The RC1 work ended locally. The owner still needs to make the publication decision and accept the verification limits.
+
+## Historical snapshot · 13 November 2026
+
 13 November 2026. **Local preparation PASS. Publication NOT AUTHORIZED.** This document is not permission to commit, push, use SVN, deploy or publish. None of those actions was performed. Production Ordin.pl was not accessed. Stop after this stage.
 
 ## Frozen scope and identity

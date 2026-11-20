@@ -25,8 +25,8 @@ $adwc_today = current_datetime()->format( 'Y-m-d' );
 		</div>
 		<button class="button button-primary" type="submit"><?php esc_html_e( 'Apply', 'advanced-dashboard-for-woocommerce' ); ?></button>
 	</form>
-	<p class="adwc-caption"><?php esc_html_e( 'Including today · Store timezone · Up to 90 days', 'advanced-dashboard-for-woocommerce' ); ?></p>
-	<p class="adwc-status" role="status" aria-live="polite" data-loading="<?php esc_attr_e( 'Loading store data…', 'advanced-dashboard-for-woocommerce' ); ?>" data-error="<?php esc_attr_e( 'Data could not be loaded. Reload the dashboard or try again.', 'advanced-dashboard-for-woocommerce' ); ?>" data-empty="<?php esc_attr_e( 'No sales activity in this range. Days without sales are shown as zero.', 'advanced-dashboard-for-woocommerce' ); ?>"><?php esc_html_e( 'Apply a date range to load the report.', 'advanced-dashboard-for-woocommerce' ); ?></p>
+	<p class="adwc-caption"><?php esc_html_e( 'Store timezone · Up to 90 days', 'advanced-dashboard-for-woocommerce' ); ?></p>
+	<p class="adwc-status" role="status" aria-live="polite" data-loading="<?php esc_attr_e( 'Loading store data…', 'advanced-dashboard-for-woocommerce' ); ?>" data-error="<?php esc_attr_e( 'Data could not be loaded. Reload the dashboard or try again.', 'advanced-dashboard-for-woocommerce' ); ?>" data-empty="<?php esc_attr_e( 'No sales activity in this range.', 'advanced-dashboard-for-woocommerce' ); ?>"><?php esc_html_e( 'Apply a date range to load the report.', 'advanced-dashboard-for-woocommerce' ); ?></p>
 	<noscript><p><?php esc_html_e( 'Enable JavaScript to load the charts and their accessible data table.', 'advanced-dashboard-for-woocommerce' ); ?></p></noscript>
 	<div class="adwc-report" hidden>
 		<p class="adwc-period"></p>
@@ -41,22 +41,25 @@ $adwc_today = current_datetime()->format( 'Y-m-d' );
 				<div><span><?php echo esc_html( $adwc_label ); ?></span><strong data-total="<?php echo esc_attr( $adwc_key ); ?>"></strong></div>
 			<?php endforeach; ?>
 		</div>
-		<p id="adwc-chart-help" class="adwc-caption"><?php esc_html_e( 'Focus a chart and use Left/Right, Home/End to inspect days. Exact values are also available in the data table.', 'advanced-dashboard-for-woocommerce' ); ?></p>
-		<?php
-		foreach ( array(
-			'net_revenue'    => __( 'Net sales', 'advanced-dashboard-for-woocommerce' ),
-			'orders_count'   => __( 'Orders', 'advanced-dashboard-for-woocommerce' ),
-			'num_items_sold' => __( 'Net items sold', 'advanced-dashboard-for-woocommerce' ),
-		) as $adwc_key => $adwc_label ) :
-			?>
-			<section class="adwc-chart" data-metric="<?php echo esc_attr( $adwc_key ); ?>">
-				<h3 id="adwc-title-<?php echo esc_attr( $adwc_key ); ?>"><?php echo esc_html( $adwc_label ); ?><span class="adwc-unit"></span></h3>
-				<div class="adwc-plot" tabindex="0" role="group" aria-labelledby="adwc-title-<?php echo esc_attr( $adwc_key ); ?>" aria-describedby="adwc-chart-help">
-					<svg aria-hidden="true" focusable="false"></svg>
-				</div>
-				<p class="adwc-point" aria-live="polite" aria-atomic="true"></p>
-			</section>
-		<?php endforeach; ?>
+		<div class="adwc-charts" hidden>
+			<p id="adwc-chart-help" class="adwc-caption"><?php esc_html_e( 'Hover or tap a chart, or focus it and use the arrow keys, Home or End to inspect days.', 'advanced-dashboard-for-woocommerce' ); ?></p>
+			<?php
+			foreach ( array(
+				'net_revenue'    => __( 'Net sales', 'advanced-dashboard-for-woocommerce' ),
+				'orders_count'   => __( 'Orders', 'advanced-dashboard-for-woocommerce' ),
+				'num_items_sold' => __( 'Net items sold', 'advanced-dashboard-for-woocommerce' ),
+			) as $adwc_key => $adwc_label ) :
+				?>
+				<section class="adwc-chart" data-metric="<?php echo esc_attr( $adwc_key ); ?>">
+					<h3 id="adwc-title-<?php echo esc_attr( $adwc_key ); ?>"><?php echo esc_html( $adwc_label ); ?><span class="adwc-unit"></span></h3>
+					<div class="adwc-plot" tabindex="0" role="group" aria-labelledby="adwc-title-<?php echo esc_attr( $adwc_key ); ?>" aria-describedby="adwc-chart-help adwc-value-<?php echo esc_attr( $adwc_key ); ?>">
+						<svg aria-hidden="true" focusable="false"></svg>
+					</div>
+					<p class="adwc-point" id="adwc-value-<?php echo esc_attr( $adwc_key ); ?>"></p>
+					<span class="adwc-chart-announcement screen-reader-text" role="status"></span>
+				</section>
+			<?php endforeach; ?>
+		</div>
 		<details class="adwc-table-details">
 			<summary><?php esc_html_e( 'View daily data table', 'advanced-dashboard-for-woocommerce' ); ?></summary>
 			<div class="adwc-table-scroll" tabindex="0" role="region" aria-label="<?php esc_attr_e( 'Daily sales data', 'advanced-dashboard-for-woocommerce' ); ?>">
@@ -67,7 +70,6 @@ $adwc_today = current_datetime()->format( 'Y-m-d' );
 				</table>
 			</div>
 		</details>
-		<p class="adwc-definition"><?php esc_html_e( 'By order creation date. Net sales exclude tax and shipping and reflect discounts and refunds.', 'advanced-dashboard-for-woocommerce' ); ?></p>
 		<details class="adwc-method-details"><summary><?php esc_html_e( 'How these figures are calculated', 'advanced-dashboard-for-woocommerce' ); ?></summary>
 		<p class="adwc-definition"><?php esc_html_e( 'By order creation date, not payment date. Net sales: after discounts and refunds, excluding tax and shipping; includes fees as defined by WooCommerce Analytics. Refund amounts and returned quantities are recorded on the refund creation day and may be negative. Orders count excludes refund records. Quantities follow Analytics refund records; amount-only refunds may not reduce item counts.', 'advanced-dashboard-for-woocommerce' ); ?></p>
 		<p class="adwc-statuses"></p>
@@ -86,10 +88,9 @@ $adwc_today = current_datetime()->format( 'Y-m-d' );
 			<div><strong data-count="on_hold"></strong><span><?php esc_html_e( 'On hold', 'advanced-dashboard-for-woocommerce' ); ?></span></div>
 			<div><strong data-count="pending"></strong><span><?php esc_html_e( 'Pending payment', 'advanced-dashboard-for-woocommerce' ); ?></span></div>
 		</div>
-		<p class="adwc-caption"><?php esc_html_e( 'Counts cover all ages. The queue below uses your age threshold and selected statuses, independently of the chart date range.', 'advanced-dashboard-for-woocommerce' ); ?></p>
 		<form class="adwc-preferences">
 			<label for="adwc-age"><?php esc_html_e( 'Age threshold (hours)', 'advanced-dashboard-for-woocommerce' ); ?>
-				<input id="adwc-age" name="age_hours" type="number" min="1" max="8760" step="1" required value="<?php echo esc_attr( $adwc_preferences['age_hours'] ); ?>">
+				<input id="adwc-age" name="age_hours" type="number" min="1" max="8760" step="1" required aria-describedby="adwc-age-note" value="<?php echo esc_attr( $adwc_preferences['age_hours'] ); ?>">
 			</label>
 			<details>
 				<summary><?php esc_html_e( 'Queue statuses', 'advanced-dashboard-for-woocommerce' ); ?></summary>
@@ -106,10 +107,14 @@ $adwc_today = current_datetime()->format( 'Y-m-d' );
 			</details>
 			<button type="submit" class="button"><?php esc_html_e( 'Save my preferences', 'advanced-dashboard-for-woocommerce' ); ?></button>
 		</form>
-		<p class="adwc-caption"><?php esc_html_e( 'Age is measured from order creation, not time in the current status. Older than the threshold does not automatically mean an error or a late order.', 'advanced-dashboard-for-woocommerce' ); ?></p>
+		<p id="adwc-age-note" class="adwc-caption"><?php esc_html_e( 'Age alone does not mean an order is late.', 'advanced-dashboard-for-woocommerce' ); ?></p>
 		<p class="adwc-operations-status" role="status" aria-live="polite" data-loading="<?php esc_attr_e( 'Loading orders…', 'advanced-dashboard-for-woocommerce' ); ?>" data-error="<?php esc_attr_e( 'Order information could not be loaded or saved. Try again.', 'advanced-dashboard-for-woocommerce' ); ?>" data-saved="<?php esc_attr_e( 'Your preferences have been saved.', 'advanced-dashboard-for-woocommerce' ); ?>" data-empty="<?php esc_attr_e( 'No editable orders match this age threshold and the selected statuses.', 'advanced-dashboard-for-woocommerce' ); ?>"></p>
-		<p class="adwc-queue-description"></p>
 		<details class="adwc-queue-details" hidden><summary data-label="<?php esc_attr_e( 'Review matching orders', 'advanced-dashboard-for-woocommerce' ); ?>"><?php esc_html_e( 'Review matching orders', 'advanced-dashboard-for-woocommerce' ); ?></summary><ol class="adwc-order-list" hidden></ol></details>
+		<details class="adwc-operations-help">
+			<summary><?php esc_html_e( 'How order review works', 'advanced-dashboard-for-woocommerce' ); ?></summary>
+			<p class="adwc-caption"><?php esc_html_e( 'Counts cover all ages. Chart dates do not filter the counts or the queue. Age is measured from order creation, regardless of time in the current status.', 'advanced-dashboard-for-woocommerce' ); ?></p>
+			<p class="adwc-caption adwc-queue-description"></p>
+		</details>
 	</section>
 	<?php endif; ?>
 	<p class="adwc-settings"><a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-admin&path=/analytics/settings' ) ); ?>"><?php esc_html_e( 'Analytics settings and historical import', 'advanced-dashboard-for-woocommerce' ); ?></a></p>

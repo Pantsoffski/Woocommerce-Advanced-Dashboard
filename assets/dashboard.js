@@ -7,19 +7,23 @@
 	const range = form.elements.range;
 	const status = root.querySelector('.adwc-status');
 	const report = root.querySelector('.adwc-report');
+	const chartGroup = report.querySelector('.adwc-charts');
 	const counts = root.querySelector('.adwc-counts');
 	const operations = root.querySelector('.adwc-operations');
 	const metrics = ['net_revenue', 'orders_count', 'num_items_sold'];
 	const colors = ['#135e96', '#007c65', '#7149a1'];
 	let dateFormat;
+	let axisDateFormat;
 	let numberFormat;
 	let countFormat;
 	try {
 		dateFormat = new Intl.DateTimeFormat(root.dataset.locale, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+		axisDateFormat = new Intl.DateTimeFormat(root.dataset.locale, { day: 'numeric', month: 'short', timeZone: 'UTC' });
 		numberFormat = new Intl.NumberFormat(root.dataset.locale, { maximumFractionDigits: 2, notation: 'compact' });
 		countFormat = new Intl.NumberFormat(root.dataset.locale);
 	} catch (_) {
 		dateFormat = new Intl.DateTimeFormat('en', { timeZone: 'UTC' });
+		axisDateFormat = new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short', timeZone: 'UTC' });
 		numberFormat = new Intl.NumberFormat('en', { maximumFractionDigits: 2 });
 		countFormat = new Intl.NumberFormat('en');
 	}
@@ -50,6 +54,7 @@
 		const plot = section.querySelector('.adwc-plot');
 		const svg = plot.querySelector('svg');
 		const point = section.querySelector('.adwc-point');
+		const announcement = section.querySelector('.adwc-chart-announcement');
 		const metric = section.dataset.metric;
 		let rows = [];
 		let selected = 0;
@@ -58,18 +63,21 @@
 		let dot;
 		let x;
 		let y;
-		const inspect = (position) => {
+		const inspect = (position, source) => {
 			if (!rows.length) return;
-			selected = Math.max(0, Math.min(rows.length - 1, position));
+			const next = Math.max(0, Math.min(rows.length - 1, position));
+			if (next === selected && source !== 'draw') return;
+			selected = next;
 			const row = rows[selected];
 			marker.setAttribute('x1', x(selected));
 			marker.setAttribute('x2', x(selected));
 			dot.setAttribute('cx', x(selected));
 			dot.setAttribute('cy', y(row[metric]));
 			point.textContent = `${dateLabel(row.date)}: ${row.formatted[metric]}`;
+			if (source === 'keyboard') announcement.textContent = point.textContent;
 		};
 		const draw = () => {
-			if (!rows.length || report.hidden) return;
+			if (!rows.length || report.hidden || chartGroup.hidden) return;
 			width = Math.max(260, plot.getBoundingClientRect().width);
 			const left = 60, right = width - 14, top = 18, bottom = 142;
 			const values = rows.map((row) => row[metric]);
@@ -93,27 +101,54 @@
 			const path = rows.map((row, i) => `${i ? 'L' : 'M'}${x(i)},${y(row[metric])}`).join(' ');
 			svg.append(svgElement('path', { d: path, class: 'adwc-line', stroke: colors[index] }));
 			[...new Set([0, Math.floor((rows.length - 1) / 2), rows.length - 1])].forEach((i) => {
-				const label = dateLabel(rows[i].date).replace(/\s*\d{4}/, '');
+				const label = axisDateFormat.format(new Date(`${rows[i].date}T12:00:00Z`));
 				svg.append(svgElement('text', { x: x(i), y: 167, 'text-anchor': i === 0 ? 'start' : i === rows.length - 1 ? 'end' : 'middle' }, label));
 			});
 			marker = svgElement('line', { y1: top, y2: bottom, class: 'adwc-marker' });
 			dot = svgElement('circle', { r: 4, fill: colors[index], stroke: '#fff', 'stroke-width': 2 });
 			svg.append(marker, dot);
-			inspect(selected);
+			inspect(selected, 'draw');
 		};
+		let frame;
+		let pointerX;
+		const cancelHover = () => {
+			if (frame === undefined) return;
+			cancelAnimationFrame(frame);
+			frame = undefined;
+		};
+		const inspectPointer = (clientX) => {
+			if (!rows.length || report.hidden || chartGroup.hidden) return;
+			const bounds = plot.getBoundingClientRect();
+			if (!bounds.width) return;
+			inspect(Math.round(((clientX - bounds.left) * width / bounds.width - 60) / (width - 74) * (rows.length - 1)));
+		};
+		plot.addEventListener('pointermove', (event) => {
+			if (event.pointerType === 'touch') return;
+			pointerX = event.clientX;
+			if (frame !== undefined) return;
+			frame = requestAnimationFrame(() => {
+				frame = undefined;
+				inspectPointer(pointerX);
+			});
+		});
+		plot.addEventListener('pointerleave', cancelHover);
 		plot.addEventListener('keydown', (event) => {
 			const target = { ArrowLeft: selected - 1, ArrowRight: selected + 1, Home: 0, End: rows.length - 1 }[event.key];
-			if (target !== undefined && rows.length) { event.preventDefault(); inspect(target); }
+			if (target !== undefined && rows.length) {
+				event.preventDefault();
+				cancelHover();
+				inspect(target, 'keyboard');
+			}
 		});
 		plot.addEventListener('pointerdown', (event) => {
 			if (!rows.length) return;
+			cancelHover();
 			plot.focus({ preventScroll: true });
-			const bounds = plot.getBoundingClientRect();
-			inspect(Math.round(((event.clientX - bounds.left) * width / bounds.width - 60) / (width - 74) * (rows.length - 1)));
+			inspectPointer(event.clientX);
 		});
 		if ('ResizeObserver' in window) new ResizeObserver(draw).observe(plot);
 		else window.addEventListener('resize', draw);
-		return { update(data) { rows = data.rows; selected = rows.length - 1; section.querySelector('.adwc-unit').textContent = metric === 'net_revenue' ? ` (${data.currency})` : ''; draw(); } };
+		return { update(data) { cancelHover(); rows = data.rows; selected = rows.length - 1; section.querySelector('.adwc-unit').textContent = metric === 'net_revenue' ? ` (${data.currency})` : ''; draw(); } };
 	});
 
 	const validData = (data) => data && typeof data.state === 'string' && (data.state !== 'ready' || (
@@ -145,6 +180,7 @@
 				counts.hidden = false;
 			}
 			if (data.state !== 'ready') { setStatus(data.message || status.dataset.error, 'unavailable'); return; }
+			chartGroup.hidden = data.empty === true;
 			report.hidden = false;
 			root.querySelector('.adwc-period').textContent = `${dateLabel(data.from)} – ${dateLabel(data.to)} · ${data.timezone}`;
 			metrics.forEach((metric) => { root.querySelector(`[data-total="${metric}"]`).textContent = data.totals.formatted[metric]; });
@@ -163,7 +199,7 @@
 				});
 				body.append(tr);
 			});
-			charts.forEach((chart) => chart.update(data));
+			if (!chartGroup.hidden) charts.forEach((chart) => chart.update(data));
 			setStatus(data.empty ? status.dataset.empty : '', data.empty ? 'empty' : 'ready');
 		} catch (error) {
 			if (requestId === sequence && error.name !== 'AbortError') {
